@@ -603,12 +603,12 @@ static void bb_ui_draw_debug(UIState *s)
     const UIScene *scene = &s->scene;
     char str[1024];
 
-    int y = s->viz_rect.y + 50;
-    const int height = 55;
+    int y = 80;
+    const int height = 60;
 
-    nvgTextAlign(s->vg, NVG_ALIGN_RIGHT | NVG_ALIGN_BASELINE);
+    nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
 
-    const int text_x = 1600;
+    const int text_x = s->viz_rect.centerX() + s->viz_rect.w * 10 / 55;
 
     auto controls_state = (*s->sm)["controlsState"].getControlsState();
     auto car_control = (*s->sm)["carControl"].getCarControl();
@@ -647,10 +647,6 @@ static void bb_ui_draw_debug(UIState *s)
 
     y += height;
     snprintf(str, sizeof(str), "Gas: %.3f, Brake: %.3f", gas, brake);
-    ui_draw_text(s, text_x, y, str, 22 * 2.5, textColor, "sans-regular");
-
-    y += height;
-    snprintf(str, sizeof(str), "LeadDist: %.3f", leadDist);
     ui_draw_text(s, text_x, y, str, 22 * 2.5, textColor, "sans-regular");
 
 }
