@@ -77,10 +77,6 @@ def update_panda():
     cloudlog.info("Version mismatch after flashing, exiting")
     raise AssertionError
 
-  cloudlog.info("Resetting panda")
-  panda.reset()
-
-
 def main():
   update_panda()
 
