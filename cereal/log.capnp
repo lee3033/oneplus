@@ -625,8 +625,7 @@ struct ControlsState @0x97ff69c53601abf1 {
   }
 
   # deprecated
-  vEgoDEPRECATED @0 :Float32;
-  vEgoRawDEPRECATED @32 :Float32;
+  vEgoRaw @32 :Float32;
   aEgoDEPRECATED @1 :Float32;
   canMonoTimeDEPRECATED @16 :UInt64;
   radarStateMonoTimeDEPRECATED @17 :UInt64;
