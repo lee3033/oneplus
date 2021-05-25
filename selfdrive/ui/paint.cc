@@ -672,8 +672,7 @@ static void bb_ui_draw_UI(UIState *s)
 
   bb_ui_draw_basic_info(s);
 
-  if(s->show_debug_ui)
-    bb_ui_draw_debug(s);
+  bb_ui_draw_debug(s);
 }
 
 static void ui_draw_vision_brake(UIState *s) {

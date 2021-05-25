@@ -175,7 +175,6 @@ typedef struct UIState {
   float zoom;
 
   //
-  bool show_debug_ui;
   TouchState touch;
 
 } UIState;
