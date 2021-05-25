@@ -107,6 +107,7 @@ typedef struct UIScene {
   float angleSteers;
   int engineRPM;
   bool recording;
+  bool brakeLights;
   cereal::PandaState::PandaType pandaType;
 
   // gps
