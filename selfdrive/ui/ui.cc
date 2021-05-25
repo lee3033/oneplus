@@ -130,7 +130,15 @@ static void update_sockets(UIState *s){
 static void update_state(UIState *s) {
   SubMaster &sm = *(s->sm);
   UIScene &scene = s->scene;
-
+  if (scene.started && sm.updated("controlsState")) {
+    scene.controls_state = sm["controlsState"].getControlsState();
+    s->scene.angleSteers  = scene.controls_state.getAngleSteers();
+  }
+  if (sm.updated("carState")) {
+    scene.car_state = sm["carState"].getCarState();
+    s->scene.brakeLights = scene.car_state.getBrakeLights();
+    s->scene.engineRPM = scene.car_state.getEngineRPM();
+  }
   if (sm.updated("radarState")) {
     std::optional<cereal::ModelDataV2::XYZTData::Reader> line;
     if (sm.rcv_frame("modelV2") > 0) {
