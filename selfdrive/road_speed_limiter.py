@@ -10,12 +10,9 @@ from common.numpy_fast import interp
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
-CAMERA_SPEED_FACTOR = 1.05
-
 class RoadSpeedLimiter:
   def __init__(self):
-    self.json_road_limit = None
-    self.active = 0
+    self.json = None
     self.last_updated = 0
     self.slowing_down = False
     self.last_exception = None
@@ -39,22 +36,13 @@ class RoadSpeedLimiter:
         while True:
 
           try:
-            data, addr = sock.recvfrom(4096)
+            data, addr = sock.recvfrom(2048)
             json_obj = json.loads(data.decode())
 
             try:
               self.lock.acquire()
-
-              try:
-                if 'active' in json_obj:
-                  self.active = json_obj['active']
-              except:
-                pass
-
-              if 'road_limit' in json_obj:
-                self.json_road_limit = json_obj['road_limit']
-                self.last_updated = current_milli_time()
-
+              self.json = json_obj
+              self.last_updated = current_milli_time()
             finally:
               self.lock.release()
 
@@ -62,28 +50,21 @@ class RoadSpeedLimiter:
 
             try:
               self.lock.acquire()
-              self.json_road_limit = None
+              self.json = None
             finally:
               self.lock.release()
 
       except Exception as e:
         self.last_exception = e
 
-  def get_limit_val(self, key, default=None):
+  def get_val(self, key, default=None):
 
-    if self.json_road_limit is None:
+    if self.json is None:
       return default
 
-    if key in self.json_road_limit:
-      return self.json_road_limit[key]
+    if key in self.json:
+      return self.json[key]
     return default
-
-  def get_active(self):
-
-    if self.active is None:
-      return 0
-
-    return self.active
 
   def get_max_speed(self, CS, v_cruise_kph):
 
@@ -101,17 +82,17 @@ class RoadSpeedLimiter:
 
     try:
 
-      road_limit_speed = self.get_limit_val('road_limit_speed')
-      is_highway = self.get_limit_val('is_highway')
+      road_limit_speed = self.get_val('road_limit_speed')
+      is_highway = self.get_val('is_highway')
 
-      cam_type = int(self.get_limit_val('cam_type', 0))
+      cam_type = int(self.get_val('cam_type', 0))
 
-      cam_limit_speed_left_dist = self.get_limit_val('cam_limit_speed_left_dist')
-      cam_limit_speed = self.get_limit_val('cam_limit_speed')
+      cam_limit_speed_left_dist = self.get_val('cam_limit_speed_left_dist')
+      cam_limit_speed = self.get_val('cam_limit_speed')
 
-      section_limit_speed = self.get_limit_val('section_limit_speed')
+      section_limit_speed = self.get_val('section_limit_speed')
       # section_avg_speed = self.get_val('section_avg_speed')
-      section_left_dist = self.get_limit_val('section_left_dist')
+      section_left_dist = self.get_val('section_left_dist')
       # section_left_time = self.get_val('section_left_time')
 
       if is_highway is not None:
@@ -162,12 +143,12 @@ class RoadSpeedLimiter:
           td = self.start_dist - base
           d = cam_limit_speed_left_dist - base
 
-          if d > 0 and td > 0. and diff_speed > 0 and (section_left_dist is None or section_left_dist < 10):
+          if d > 0 and td > 0. and diff_speed > 0:
             pp = d / td
           else:
             pp = 0
 
-          return cam_limit_speed * CAMERA_SPEED_FACTOR + int(pp * diff_speed), cam_limit_speed, cam_limit_speed_left_dist, first_started, log
+          return cam_limit_speed + int(pp * diff_speed), cam_limit_speed, cam_limit_speed_left_dist, first_started, log
 
         self.slowing_down = False
         return 0, cam_limit_speed, cam_limit_speed_left_dist, False, log
@@ -196,12 +177,6 @@ class RoadSpeedLimiter:
 
 road_speed_limiter = None
 
-def road_speed_limiter_get_active():
-  global road_speed_limiter
-  if road_speed_limiter is None:
-    road_speed_limiter = RoadSpeedLimiter()
-
-  return road_speed_limiter.get_active()
 
 def road_speed_limiter_get_max_speed(CS, v_cruise_kph):
   global road_speed_limiter
