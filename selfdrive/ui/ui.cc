@@ -136,7 +136,6 @@ static void update_state(UIState *s) {
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
-    s->scene.brakeLights = scene.car_state.getBrakeLights();
     s->scene.engineRPM = scene.car_state.getEngineRPM();
   }
   if (sm.updated("radarState")) {
