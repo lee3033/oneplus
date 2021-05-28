@@ -6,15 +6,26 @@
 
 class Sidebar : public QFrame {
   Q_OBJECT
+  Q_PROPERTY(QString connectStr MEMBER connect_str NOTIFY valueChanged);
+  Q_PROPERTY(QColor connectStatus MEMBER connect_status NOTIFY valueChanged);
+  Q_PROPERTY(QString pandaStr MEMBER panda_str NOTIFY valueChanged);
+  Q_PROPERTY(QColor pandaStatus MEMBER panda_status NOTIFY valueChanged);
+  Q_PROPERTY(int tempVal MEMBER temp_val NOTIFY valueChanged);
+  Q_PROPERTY(QColor tempStatus MEMBER temp_status NOTIFY valueChanged);
+  Q_PROPERTY(QString netType MEMBER net_type NOTIFY valueChanged);
+  Q_PROPERTY(QImage netStrength MEMBER net_strength NOTIFY valueChanged);
+  Q_PROPERTY(QString wifiAddr MEMBER wifi_addr NOTIFY valueChanged);
+  Q_PROPERTY(QString battPerc MEMBER batt_perc NOTIFY valueChanged);
 
 public:
   explicit Sidebar(QWidget* parent = 0);
 
 signals:
   void openSettings();
+  void valueChanged();
 
 public slots:
-  void update(const UIState &s);
+  void updateState(const UIState &s);
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -23,7 +34,7 @@ protected:
 private:
   void drawMetric(QPainter &p, const QString &label, const QString &val, QColor c, int y);
 
-  QImage home_img, settings_img;
+  QImage home_img, settings_img, batt_img;
   const QMap<cereal::DeviceState::NetworkType, QString> network_type = {
     {cereal::DeviceState::NetworkType::NONE, "--"},
     {cereal::DeviceState::NetworkType::WIFI, "WiFi"},
@@ -45,14 +56,14 @@ private:
   const QColor warning_color = QColor(218, 202, 37);
   const QColor danger_color = QColor(201, 34, 49);
 
-  Params params;
   QString connect_str = "OFFLINE";
   QColor connect_status = warning_color;
   QString panda_str = "NO\nPANDA";
   QColor panda_status = warning_color;
   int temp_val = 0;
   QColor temp_status = warning_color;
-  cereal::DeviceState::NetworkType net_type;
-  cereal::DeviceState::NetworkStrength strength;
+  QString net_type;
+  QImage net_strength;
   QString wifi_addr = "--";
+  QString batt_perc = "%d%%%s";
 };
