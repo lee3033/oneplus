@@ -456,42 +456,42 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
   float ambientTemp = device_state.getAmbientTempC();
 
    // add ambient temperature
-  if (UI_FEATURE_RIGHT_AMBIENT_TEMP) {
-
-    char val_str[16];
-    char uom_str[6];
-    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
-
-    if(ambientTemp > 40.f) {
-      val_color = nvgRGBA(255, 188, 3, 200);
-    }
-    if(ambientTemp > 50.f) {
-      val_color = nvgRGBA(255, 0, 0, 200);
-    }
-    snprintf(val_str, sizeof(val_str), "%.1f°", ambientTemp);
-    snprintf(uom_str, sizeof(uom_str), "");
-    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "Eon온도",
-        bb_rx, bb_ry, bb_uom_dx,
-        val_color, lab_color, uom_color,
-        value_fontSize, label_fontSize, uom_fontSize );
-    bb_ry = bb_y + bb_h;
-  }
-
+//  if (UI_FEATURE_RIGHT_AMBIENT_TEMP) {
+//
+//    char val_str[16];
+//    char uom_str[6];
+//    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
+//
+//    if(ambientTemp > 40.f) {
+//      val_color = nvgRGBA(255, 188, 3, 200);
+//    }
+//    if(ambientTemp > 50.f) {
+//      val_color = nvgRGBA(255, 0, 0, 200);
+//    }
+//    snprintf(val_str, sizeof(val_str), "%.1f°", ambientTemp);
+//    snprintf(uom_str, sizeof(uom_str), "");
+//    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "Eon온도",
+//        bb_rx, bb_ry, bb_uom_dx,
+//        val_color, lab_color, uom_color,
+//        value_fontSize, label_fontSize, uom_fontSize );
+//    bb_ry = bb_y + bb_h;
+//  }
+//
   float batteryTemp = device_state.getBatteryTempC();
   bool batteryless =  batteryTemp < -20;
 
-  // add battery level
-    if(UI_FEATURE_RIGHT_BATTERY_LEVEL && !batteryless) {
+  // add battery Temp
+    if(true && !batteryless) {
     char val_str[16];
     char uom_str[6];
-    char bat_lvl[4] = "";
+    //char bat_lvl[4] = "";
     NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
 
-    int batteryPercent = device_state.getBatteryPercent();
+//    int batteryPercent = device_state.getBatteryPercent();
 
-    snprintf(val_str, sizeof(val_str), "%d%%", batteryPercent);
+    snprintf(val_str, sizeof(val_str), "%.1f°", batteryTemp);
     snprintf(uom_str, sizeof(uom_str), "");
-    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "배터리레벨",
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "배터리온도",
         bb_rx, bb_ry, bb_uom_dx,
         val_color, lab_color, uom_color,
         value_fontSize, label_fontSize, uom_fontSize );
@@ -539,10 +539,28 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
          val_color = nvgRGBA(255, 80, 80, 200);
       }
 
-    snprintf(val_str, sizeof(val_str), "%.2fm", gpsAccuracy);
-    snprintf(uom_str, sizeof(uom_str), "위성:%d", (s->scene.satelliteCount));
-//    snprintf(uom_str, sizeof(uom_str), "m");
+    snprintf(val_str, sizeof(val_str), "%.2f", gpsAccuracy);
+//    snprintf(uom_str, sizeof(uom_str), "m", (s->scene.satelliteCount));
+    snprintf(uom_str, sizeof(uom_str), "미터");
     bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "GPS거리",
+        bb_rx, bb_ry, bb_uom_dx,
+        val_color, lab_color, uom_color,
+        value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+
+  // add panda GPS satellite
+  if (UI_FEATURE_RIGHT_GPS_SATELLITE) {
+    char val_str[16];
+    char uom_str[3];
+    NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
+
+    if(s->scene.satelliteCount < 6)
+         val_color = nvgRGBA(255, 80, 80, 200);
+
+    snprintf(val_str, sizeof(val_str), "%d", s->scene.satelliteCount > 0 ? s->scene.satelliteCount : 0);
+    snprintf(uom_str, sizeof(uom_str), "");
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "위성수",
         bb_rx, bb_ry, bb_uom_dx,
         val_color, lab_color, uom_color,
         value_fontSize, label_fontSize, uom_fontSize );
@@ -559,30 +577,12 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
     }
     else {snprintf(val_str, sizeof(val_str), "%d", (s->scene.engineRPM));}
     snprintf(uom_str, sizeof(uom_str), "");
-    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "RPM",
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "엔진 RPM",
         bb_rx, bb_ry, bb_uom_dx,
         val_color, lab_color, uom_color,
         value_fontSize, label_fontSize, uom_fontSize );
     bb_ry = bb_y + bb_h;
   }
-
-  // add panda GPS satellite
-  //if (UI_FEATURE_RIGHT_GPS_SATELLITE) {
-  //  char val_str[16];
-  //  char uom_str[3];
-  //  NVGcolor val_color = nvgRGBA(255, 255, 255, 200);
-//
-  //  if(s->scene.satelliteCount < 6)
-  //       val_color = nvgRGBA(255, 80, 80, 200);
-//
-  //  snprintf(val_str, sizeof(val_str), "%d", s->scene.satelliteCount > 0 ? s->scene.satelliteCount : 0);
-  //  snprintf(uom_str, sizeof(uom_str), "");
-  //  bb_h +=bb_ui_draw_measure(s,  val_str, uom_str, "SATELLITE",
-  //      bb_rx, bb_ry, bb_uom_dx,
-  //      val_color, lab_color, uom_color,
-  //      value_fontSize, label_fontSize, uom_fontSize );
-  //  bb_ry = bb_y + bb_h;
-  //}
 
   //finally draw the frame
   bb_h += 40;
@@ -621,7 +621,7 @@ static void bb_ui_draw_debug(UIState *s)
     const UIScene *scene = &s->scene;
     char str[1024];
 
-    int y = 250;
+    int y = 40;
     const int height = 60;
 
     nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_BASELINE);
@@ -738,8 +738,8 @@ static void ui_draw_vision_speed(UIState *s) {
   const std::string speed_str = std::to_string((int)std::nearbyint(speed));
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   NVGcolor color = s->scene.car_state.getBrakeLights() ? nvgRGBA(255, 66, 66, 255) : COLOR_WHITE;
-  ui_draw_text(s, s->viz_rect.centerX(), 240, speed_str.c_str(), 96 * 2.5, color, "sans-bold");
-  ui_draw_text(s, s->viz_rect.centerX(), 320, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+  ui_draw_text(s, s->viz_rect.centerX(), 190, speed_str.c_str(), 96 * 2.5, color, "sans-bold");
+  ui_draw_text(s, s->viz_rect.centerX(), 270, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
 }
 
 static void ui_draw_vision_event(UIState *s) {
