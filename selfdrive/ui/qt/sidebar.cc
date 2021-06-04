@@ -94,7 +94,7 @@ void Sidebar::paintEvent(QPaintEvent *event) {
 
   //battery
   QRect  rect(55, 293, 96, 36);
-  QRect  bq(60, 298, int(80* m_batteryPercent * 0.01), 25);
+  QRect  bq(60, 298, int(76* m_batteryPercent * 0.01), 25);
   QBrush bgBrush("#149948");
   p.fillRect(bq,  bgBrush);
   p.drawImage(rect, battery_imgs[m_battery_img]);
@@ -103,8 +103,10 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   configFont(p, "Open Sans", 30, "Regular");
 
   char battery_str[32];
+
+  const QRect bt = QRect(180, 293, event->rect().width(), 30);
   snprintf(battery_str, sizeof(battery_str), "%d%%", m_batteryPercent);
-  p.drawText(rect, Qt::AlignCenter, battery_str);
+  p.drawText(bt, Qt::AlignLeft, battery_str);
 
   // static imgs
   p.setOpacity(0.65);
