@@ -154,15 +154,15 @@ class kegman_kans_conf():
         self.write_config(self.config)
 
     else:  # add "accelerationmode":"0" like as bellow, 1st word on the 2nd line
-      self.config = {"lastTrMode":"2", "battChargeMin":"60", "battChargeMax":"80", "wheelTouchSeconds":"18000", \
-                     "accelerationMode":"0", "battPercOff":"85", "carVoltageMinEonShutdown":"12000", \
-                     "brakeStoppingTarget":"0.5", "tuneGernby":"1", "AutoHold":"1", "steerLimitTimer":"0.7", \
-                     "Kp":"0.162", "Ki":"0.0144", "Kd":"0.072", "Kf":"0.000072", "liveParams":"1", "deadzone":"0.0", \
+      self.config = {"lastTrMode":"2", "battChargeMin":"60", "battChargeMax":"75", "wheelTouchSeconds":"18000", \
+                     "accelerationMode":"0", "battPercOff":"80", "carVoltageMinEonShutdown":"12000", \
+                     "brakeStoppingTarget":"0.5", "tuneGernby":"1", "AutoHold":"1", "steerLimitTimer":"5.7", \
+                     "Kp":"0.192", "Ki":"0.021", "Kd":"0.00032", "Kf":"0.00006", "liveParams":"1", "deadzone":"0.0", \
                      "1barBP0":"-0.3", "2barBP0":"-0.2", "3barBP0":"-0.1", \
-                     "1barBP1":"2.0", "2barBP1":"2.25", "3barBP1":"4.0", \
+                     "1barBP1":"2.0", "2barBP1":"2.25", "3barBP1":"4.1", \
                      "steerRatio":"15.07", "steerRateCost":"0.66", "steerActuatorDelay":"0.175", \
-                     "1barMax":"1.5", "2barMax":"2.0", "3barMax":"3.7", "STOPPING_DISTANCE":"1.0", \
-                     "ONE_BAR_DISTANCE":"0.8", "TWO_BAR_DISTANCE":"1.8", "THREE_BAR_DISTANCE":"3.6", \
+                     "1barMax":"1.5", "2barMax":"2.0", "3barMax":"3.85", "STOPPING_DISTANCE":"0.9", \
+                     "ONE_BAR_DISTANCE":"1.0", "TWO_BAR_DISTANCE":"1.8", "THREE_BAR_DISTANCE":"3.6", \
                      "1barHwy":"0.6", "2barHwy":"0.2", "3barHwy":"0.1", "nTune":"1", "useLiveSteerRatio":"1", \
                      "sR_boost":"5.0", "sR_BP0":"1.44", "sR_BP1":"25", "sR_time":"7.0", \
                      "ALCnudgeLess":"1", "ALCminSpeed":"8.6", "ALCtimer":"0.5", "CruiseDelta":"5", \
