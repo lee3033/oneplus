@@ -1,7 +1,5 @@
 #pragma once
-
 #include <cstdlib>
-
 #include "hardware/hwcomposer_defs.h"
 
 bool set_brightness(int brightness);

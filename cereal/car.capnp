@@ -52,7 +52,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     manualRestart @30;
     lowSpeedLockout @31;
     plannerError @32;
-    debugAlert @34;
+    joystickDebug @34;
     steerTempUnavailableUserOverride @35;
     resumeRequired @36;
     preDriverDistracted @37;
@@ -90,6 +90,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupNoControl @77;
     startupMaster @78;
     startupFuzzyFingerprint @97;
+    startupNoFw @108;
     fcw @79;
     steerSaturated @80;
     belowEngageSpeed @84;
@@ -103,6 +104,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     processNotRunning @95;
     dashcamMode @96;
     controlsInitializing @98;
+    
     #Autohold Activate
     autoHoldActivated @99;
 
@@ -137,6 +139,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     roadCameraError @104;
     driverCameraError @105;
     wideRoadCameraError @106;
+    localizerMalfunction @107; 
   }
 }
 
@@ -387,6 +390,7 @@ struct CarParams {
   enableDsu @5 :Bool; # driving support unit
   enableApgs @6 :Bool; # advanced parking guidance system
   enableBsm @56 :Bool; # blind spot monitoring
+  hasStockCamera @57 :Bool; # factory LKAS/LDW camera is present
 
   minEnableSpeed @7 :Float32;
   minSteerSpeed @8 :Float32;
@@ -470,9 +474,10 @@ struct CarParams {
     kpV @1 :List(Float32);
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
-    kf @4 :Float32;
-    deadzoneBP @5 :List(Float32);
-    deadzoneV @6 :List(Float32);
+    kfBP @4 :List(Float32);
+    kfV @5 :List(Float32);
+    deadzoneBP @6 :List(Float32);
+    deadzoneV @7 :List(Float32);
   }
 
   struct LateralINDITuning {
@@ -543,6 +548,7 @@ struct CarParams {
     automatic @1;  # Traditional auto, including DSG
     manual @2;  # True "stick shift" only
     direct @3;  # Electric vehicle or other direct drive
+    cvt @4;
   }
 
   struct CarFw {
