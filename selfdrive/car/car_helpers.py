@@ -11,10 +11,9 @@ from selfdrive.car import gen_empty_fingerprint
 
 from cereal import car, log
 EventName = car.CarEvent.EventName
-HwType = log.PandaState.PandaType
 
 
-def get_startup_event(car_recognized, controller_available, fuzzy_fingerprint, hw_type, fw_seen):
+def get_startup_event(car_recognized, controller_available, fuzzy_fingerprint, fw_seen):
 
   event = EventName.startup
 
@@ -27,8 +26,6 @@ def get_startup_event(car_recognized, controller_available, fuzzy_fingerprint, h
     event = EventName.startupNoControl
   elif car_recognized and fuzzy_fingerprint:
     event = EventName.startupFuzzyFingerprint
-  elif hw_type == HwType.greyPanda:
-    event = EventName.startupGreyPanda
   return event
 
 
