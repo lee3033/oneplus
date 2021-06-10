@@ -12,7 +12,7 @@ kegman_kans = kegman_kans_conf()
 class CarState(CarStateBase):
   def __init__(self, CP):
     super().__init__(CP)
-    can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
+    can_define = CANDefine(DBC[CP.carFingerprint]["pt"])
     self.shifter_values = can_define.dv["ECMPRDNL"]["PRNDL"]
 
 #3Bar Distance
@@ -159,7 +159,7 @@ class CarState(CarStateBase):
       ]
       checks += []
 
-    return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, CanBus.POWERTRAIN, enforce_checks=False)
+    return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN, enforce_checks=False)
 
 # all bellows are for Brake Light
   @staticmethod
@@ -170,4 +170,4 @@ class CarState(CarStateBase):
       ("FrictionBrakePressure", "EBCMFrictionBrakeStatus", 0),
     ]
     checks = []
-    return CANParser(DBC[CP.carFingerprint]['chassis'], signals, checks, CanBus.CHASSIS, enforce_checks=False)
+    return CANParser(DBC[CP.carFingerprint]["chassis"], signals, checks, CanBus.CHASSIS, enforce_checks=False)
