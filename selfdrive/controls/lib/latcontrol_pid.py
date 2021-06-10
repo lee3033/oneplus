@@ -12,8 +12,8 @@ class LatControlPID():
     self.deadzone = float(self.kegman_kans.conf['deadzone'])
     self.pid = PIController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
                             (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
-                            k_f=CP.lateralTuning.pid.kf, pos_limit=1.0, neg_limit=-1.0,
-                            sat_limit=CP.steerLimitTimer)
+                            ([0.], [CP.lateralTuning.pid.kf]),
+                            pos_limit=1.0, neg_limit=-1.0, sat_limit=CP.steerLimitTimer)
     self.mpc_frame = 0
 
   def reset(self):
@@ -31,7 +31,7 @@ class LatControlPID():
         self.steerLimitTimer = float(self.kegman_kans.conf['steerLimitTimer'])
         self.pid = PIController((CP.lateralTuning.pid.kpBP, self.steerKpV),
                             (CP.lateralTuning.pid.kiBP, self.steerKiV),
-                            k_f=self.steerKf, pos_limit=1.0, neg_limit=-1.0,
+                            ([0.], [self.steerKf]), pos_limit=1.0, neg_limit=-1.0,
                             sat_limit=self.steerLimitTimer)
         self.deadzone = float(self.kegman_kans.conf['deadzone'])
         
