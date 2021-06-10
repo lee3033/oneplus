@@ -33,7 +33,7 @@ protected:
 private:
   void drawMetric(QPainter &p, const QString &label, const QString &val, QColor c, int y);
 
-  QImage home_img, settings_img, batt_img;
+  QImage home_img, settings_img;
   const QMap<cereal::DeviceState::NetworkType, QString> network_type = {
     {cereal::DeviceState::NetworkType::NONE, "--"},
     {cereal::DeviceState::NetworkType::WIFI, "WiFi"},
@@ -73,5 +73,4 @@ private:
 
   int    m_batteryPercent = 0;
   int    m_battery_img;  
-  std::string m_strip;
 };
