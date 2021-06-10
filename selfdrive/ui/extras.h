@@ -38,11 +38,11 @@ static void ui_draw_extras_limit_speed(UIState *s)
         nvgText(s->vg, x+w/2, y+h/2, str, NULL);
 
         nvgBeginPath(s->vg);
-        nvgRect(s->vg, x+w/2-100, y+h-40, 200, 80);
+        nvgRect(s->vg, x+w/2-90, y+h-40, 180, 80);
         NVGcolor squareColor = nvgRGBA(255, 0, 0, 200);
         nvgFillColor(s->vg, squareColor);
         nvgFill(s->vg);
-        nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 200));
+        nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 250));
 
         nvgFontSize(s->vg, 100);
         nvgFontFace(s->vg, "sans-bold");
