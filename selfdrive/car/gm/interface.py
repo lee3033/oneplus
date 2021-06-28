@@ -70,15 +70,15 @@ class CarInterface(CarInterfaceBase):
     # or camera is on powertrain bus (LKA cars without ACC).
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
     ret.openpilotLongitudinalControl = ret.enableCamera
-    tire_stiffness_factor = 0.8  # not optimized yet
 
     # Start with a baseline lateral tuning for all GM vehicles. Override tuning as needed in each model section below.
     ret.minSteerSpeed = 7 * CV.MPH_TO_MS
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.192], [0.021]]
-    ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
-    ret.steerRateCost = 0.465
-    ret.steerActuatorDelay = 0.3  # Default delay, not measured yet
+    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[7., 30.], [10., 30.]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3, 0.17], [0.02, 0.03]]
+    ret.lateralTuning.pid.kf = 0.00007   # full torque for 20 deg at 80mph means 0.00007818594
+    ret.steerRateCost = 0.37
+    ret.steerActuatorDelay = 0.125 # Default delay, not measured yet
+    tire_stiffness_factor = 1.0  # not optimized yet
 
     if candidate == CAR.VOLT:
       # supports stop and go, but initial engage must be above 18mph (which include conservatism)
@@ -88,53 +88,6 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 15.7
       ret.steerRatioRear = 0.
       ret.centerToFront = ret.wheelbase * 0.4  #  wild guess
-      ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.192], [0.021]]
-      ret.lateralTuning.pid.kf = 0.00006   # full torque for 20 deg at 80mph means 0.00007818594
-      ret.steerRateCost = 0.465
-      ret.steerActuatorDelay = 0.2  # Default delay, not measured yet	  
-
-    elif candidate == CAR.MALIBU:
-      # supports stop and go, but initial engage must be above 18mph (which include conservatism)
-      ret.minEnableSpeed = 18 * CV.MPH_TO_MS
-      ret.mass = 1496. + STD_CARGO_KG
-      ret.wheelbase = 2.83
-      ret.steerRatio = 15.8
-      ret.steerRatioRear = 0.
-      ret.centerToFront = ret.wheelbase * 0.4  # wild guess
-
-    elif candidate == CAR.HOLDEN_ASTRA:
-      ret.mass = 1363. + STD_CARGO_KG
-      ret.wheelbase = 2.662
-      # Remaining parameters copied from Volt for now
-      ret.centerToFront = ret.wheelbase * 0.4
-      ret.minEnableSpeed = 18 * CV.MPH_TO_MS
-      ret.steerRatio = 15.7
-      ret.steerRatioRear = 0.
-
-    elif candidate == CAR.ACADIA:
-      ret.minEnableSpeed = -1.  # engage speed is decided by pcm
-      ret.mass = 4353. * CV.LB_TO_KG + STD_CARGO_KG
-      ret.wheelbase = 2.86
-      ret.steerRatio = 14.4  # end to end is 13.46
-      ret.steerRatioRear = 0.
-      ret.centerToFront = ret.wheelbase * 0.4
-
-    elif candidate == CAR.BUICK_REGAL:
-      ret.minEnableSpeed = 18 * CV.MPH_TO_MS
-      ret.mass = 3779. * CV.LB_TO_KG + STD_CARGO_KG  # (3849+3708)/2
-      ret.wheelbase = 2.83  # 111.4 inches in meters
-      ret.steerRatio = 14.4  # guess for tourx
-      ret.steerRatioRear = 0.
-      ret.centerToFront = ret.wheelbase * 0.4  # guess for tourx
-
-    elif candidate == CAR.CADILLAC_ATS:
-      ret.minEnableSpeed = 18 * CV.MPH_TO_MS
-      ret.mass = 1601. + STD_CARGO_KG
-      ret.wheelbase = 2.78
-      ret.steerRatio = 15.3
-      ret.steerRatioRear = 0.
-      ret.centerToFront = ret.wheelbase * 0.49
-
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
     ret.rotationalInertia = scale_rot_inertia(ret.mass, ret.wheelbase)
@@ -143,25 +96,26 @@ class CarInterface(CarInterfaceBase):
     # mass and CG position, so all cars will have approximately similar dyn behaviors
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
+
     ret.gasMaxBP = [0.]
     ret.gasMaxV = [0.5]
+    ret.longitudinalTuning.kpBP = [5., 33.]
+    ret.longitudinalTuning.kpV = [0.4, 1.0]
+    ret.longitudinalTuning.kiBP = [0.]
+    ret.longitudinalTuning.kiV = [0.1]
+#    ret.longitudinalTuning.kpBP = [0., 5., 13., 17., 22, 33.]
+#    ret.longitudinalTuning.kpV = [0.9, 1.0, 1.3, 1.5, 1.3, 1.2]
+#    ret.longitudinalTuning.kiBP = [0., 27.]
+#    ret.longitudinalTuning.kiV = [0.09, 0.02]
+#    ret.longitudinalTuning.deadzoneBP = [0., 33.]
+#    ret.longitudinalTuning.deadzoneV = [.0, .015]
+    ret.longitudinalTuning.kfBP = [13.8, 33.]
+    ret.longitudinalTuning.kfV = [0.5, 0.2]
 
     ret.stoppingControl = True
-
-
-    ret.longitudinalTuning.deadzoneBP = [0., 8.05]
-    ret.longitudinalTuning.deadzoneV = [.0, .14]
-
-    ret.longitudinalTuning.kpBP = [0., 5., 10., 20.]
-    ret.longitudinalTuning.kpV = [1.8, 2.7, 4.0, 3.0]
-    ret.longitudinalTuning.kiBP = [0., 3., 7., 12., 20., 27.]
-    ret.longitudinalTuning.kiV = [.05, .07, .09, .15, .13, .1]
-
-    ret.stoppingBrakeRate = 0.1 # reach stopping target smoothly
-    ret.startingBrakeRate = 2.0 # release brakes fast
     ret.startAccel = 1.2 # Accelerate from 0 faster
 
-    ret.steerLimitTimer = 0.4
+    ret.steerLimitTimer = 6.4
     ret.radarTimeStep = 0.0667  # GM radar runs at 15Hz instead of standard 20Hz
 
     return ret
