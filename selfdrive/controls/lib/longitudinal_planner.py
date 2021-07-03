@@ -31,7 +31,7 @@ _A_CRUISE_MIN_BP = [0.0, 5.0, 10.0, 20.0, 55.0]
 # need fast accel at very low speed for stop and go
 # make sure these accelerations are smaller than mpc limits
 _A_CRUISE_MAX_V = [2.0, 2.0, 1.5, .5, .3]
-_A_CRUISE_MAX_V_ECO = [0.8, 0.9, 1.0, 0.4, 0.2]
+_A_CRUISE_MAX_V_ECO = [0.8, 0.9, 1.0, 0.7, 0.5]
 _A_CRUISE_MAX_V_SPORT = [3.0, 3.5, 3.0, 2.0, 2.0]
 _A_CRUISE_MAX_V_FOLLOWING = [1.6, 1.4, 1.4, .7, .3]
 _A_CRUISE_MAX_BP = [0., 5., 10., 20., 55.]
@@ -41,7 +41,7 @@ _A_TOTAL_MAX_V = [3.5, 4.0, 5.0]
 _A_TOTAL_MAX_BP = [0., 25., 55.]
 
 # Lookup table for turns original - used when slowOnCurves = 1 from kegman.json
-_A_TOTAL_MAX_V_SOC = [1.7, 3.2]
+_A_TOTAL_MAX_V_SOC = [1.2, 3.2]
 _A_TOTAL_MAX_BP_SOC = [20., 40.]
 
 
@@ -70,7 +70,8 @@ def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
     a_total_max = interp(v_ego, _A_TOTAL_MAX_BP_SOC, _A_TOTAL_MAX_V_SOC)
   else:
     a_total_max = interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
-  a_y = v_ego**2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)*0.7
+  
+  a_y = v_ego**2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)
   a_x_allowed = math.sqrt(max(a_total_max**2 - a_y**2, 0.))
 
   return [a_target[0], min(a_target[1], a_x_allowed)]

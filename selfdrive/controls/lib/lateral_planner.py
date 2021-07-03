@@ -4,8 +4,7 @@ import numpy as np
 from common.params import Params
 from common.realtime import sec_since_boot, DT_MDL
 from common.numpy_fast import interp, clip
-from selfdrive.car.gm.values import CAR
-from selfdrive.ntune import ntune_get, ntune_isEnabled
+from selfdrive.ntune import ntune_get
 from selfdrive.swaglog import cloudlog
 from selfdrive.controls.lib.lateral_mpc import libmpc_py
 from selfdrive.controls.lib.drive_helpers import MPC_COST_LAT, MPC_N, CAR_ROTATION_RADIUS

@@ -12,8 +12,9 @@ class LatControlPID():
     self.deadzone = float(self.kegman_kans.conf['deadzone'])
     self.pid = PIController((CP.lateralTuning.pid.kpBP, CP.lateralTuning.pid.kpV),
                             (CP.lateralTuning.pid.kiBP, CP.lateralTuning.pid.kiV),
-                            ([0.], [CP.lateralTuning.pid.kf]),
-                            pos_limit=1.0, neg_limit=-1.0, sat_limit=CP.steerLimitTimer)
+                            ([0.], [CP.lateralTuning.pid.kf]), pos_limit=1.0, neg_limit=-1.0,
+                            sat_limit=CP.steerLimitTimer)
+    self.angle_steers_des = 0.
     self.mpc_frame = 0
 
   def reset(self):
@@ -54,11 +55,11 @@ class LatControlPID():
       steers_max = get_steer_max(CP, CS.vEgo)
       self.pid.pos_limit = steers_max
       self.pid.neg_limit = -steers_max
+      deadzone = self.deadzone
 
       # TODO: feedforward something based on lat_plan.rateSteers
       steer_feedforward = angle_steers_des_no_offset  # offset does not contribute to resistive torque
       steer_feedforward *= CS.vEgo**2  # proportional to realigning tire momentum (~ lateral accel)
-      deadzone = self.deadzone
 
       check_saturation = (CS.vEgo > 10) and not CS.steeringRateLimited and not CS.steeringPressed
       output_steer = self.pid.update(angle_steers_des, CS.steeringAngleDeg, check_saturation=check_saturation, override=CS.steeringPressed,
