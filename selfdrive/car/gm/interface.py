@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from cereal import car
+from cereal import log
 from common.numpy_fast import interp
 from selfdrive.config import Conversions as CV
 from selfdrive.car.gm.values import CAR, Ecu, ECU_FINGERPRINT, CruiseButtons, \
@@ -69,25 +70,24 @@ class CarInterface(CarInterfaceBase):
     # or camera is on powertrain bus (LKA cars without ACC).
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
     ret.openpilotLongitudinalControl = ret.enableCamera
-    tire_stiffness_factor = 0.9  # not optimized yet
 
     # Start with a baseline lateral tuning for all GM vehicles. Override tuning as needed in each model section below.
     ret.minSteerSpeed = 7 * CV.MPH_TO_MS
-    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.192], [0.021]]
-    ret.lateralTuning.pid.kf = 0.00007  # full torque for 20 deg at 80mph means 0.00007818594
-    ret.steerRateCost = 0.35
-    ret.steerActuatorDelay = 0.075  # Default delay, not measured yet	  
+    ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[7., 30.], [10., 30.]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.3, 0.17], [0.02, 0.03]]
+    ret.lateralTuning.pid.kf = 0.00007   # full torque for 20 deg at 80mph means 0.00007818594
+    ret.steerRateCost = 0.37
+    ret.steerActuatorDelay = 0.125 # Default delay, not measured yet
+    tire_stiffness_factor = 1.0  # not optimized yet
 
     if candidate == CAR.VOLT:
       # supports stop and go, but initial engage must be above 18mph (which include conservatism)
       ret.minEnableSpeed = -1 * CV.MPH_TO_MS
       ret.mass = 1607. + STD_CARGO_KG
       ret.wheelbase = 2.69
-      ret.steerRatio = 15.07
+      ret.steerRatio = 15.7
       ret.steerRatioRear = 0.
       ret.centerToFront = ret.wheelbase * 0.4  #  wild guess
-
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
     ret.rotationalInertia = scale_rot_inertia(ret.mass, ret.wheelbase)
@@ -97,20 +97,25 @@ class CarInterface(CarInterfaceBase):
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
-    ret.longitudinalTuning.kpBP = [0., 5., 10., 20., 33]
-    ret.longitudinalTuning.kpV = [1.8, 2.3, 2.0, 1.8, 1.5]
-
-    ret.longitudinalTuning.kiBP = [0., 7., 13.8, 22., 33.]
-    ret.longitudinalTuning.kiV = [.38, .36, .34, .32, .3]
-    ret.longitudinalTuning.kfBP = [13,8, 27.7]
-    ret.longitudinalTuning.kfV = [1.5, 1.2]
-
-    ret.brakeMaxBP = [0., 19.5, 33.]
-    ret.brakeMaxV = [1.35, 1., 0.6]
+    ret.gasMaxBP = [0.]
+    ret.gasMaxV = [0.5]
+    ret.longitudinalTuning.kpBP = [5., 33.]
+    ret.longitudinalTuning.kpV = [0.4, 1.0]
+    ret.longitudinalTuning.kiBP = [0.]
+    ret.longitudinalTuning.kiV = [0.1]
+#    ret.longitudinalTuning.kpBP = [0., 5., 13., 17., 22, 33.]
+#    ret.longitudinalTuning.kpV = [0.9, 1.0, 1.3, 1.5, 1.3, 1.2]
+#    ret.longitudinalTuning.kiBP = [0., 27.]
+#    ret.longitudinalTuning.kiV = [0.09, 0.02]
+#    ret.longitudinalTuning.deadzoneBP = [0., 33.]
+#    ret.longitudinalTuning.deadzoneV = [.0, .015]
+    ret.longitudinalTuning.kfBP = [13.8, 33.]
+    ret.longitudinalTuning.kfV = [0.5, 0.2]
 
     ret.stoppingControl = True
     ret.startAccel = 1.2 # Accelerate from 0 faster
-    ret.steerLimitTimer = 0.7
+
+    ret.steerLimitTimer = 6.4
     ret.radarTimeStep = 0.0667  # GM radar runs at 15Hz instead of standard 20Hz
 
     return ret
@@ -172,10 +177,7 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.belowEngageSpeed)
     if self.CS.park_brake:
       events.add(EventName.parkBrake)
-#    if self.CS.pcm_acc_status == AccState.FAULTED:
-#      events.add(EventName.accFaulted)
-#    if ret.vEgo < self.CP.minSteerSpeed:
-#      events.add(car.CarEvent.EventName.belowSteerSpeed)
+
     if self.CS.autoHoldActivated:
       events.add(car.CarEvent.EventName.autoHoldActivated)
 
@@ -203,10 +205,10 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.parkBrake)
     if ret.cruiseState.standstill:
       events.add(EventName.resumeRequired)
-#    if self.CS.pcm_acc_status == AccState.FAULTED:
-#      events.add(EventName.accFaulted)
-#    if ret.vEgo < self.CP.minSteerSpeed:
-#      events.add(car.CarEvent.EventName.belowSteerSpeed)
+    if self.CS.pcm_acc_status == AccState.FAULTED:
+      events.add(EventName.accFaulted)
+    if ret.vEgo < self.CP.minSteerSpeed:
+      events.add(car.CarEvent.EventName.belowSteerSpeed)
 
     # handle button presses
     for b in ret.buttonEvents:

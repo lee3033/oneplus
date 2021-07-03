@@ -27,7 +27,7 @@ else:
 if "FOUR_BAR_DISTANCE" in kegman_kans.conf:
     FOUR_BAR_DISTANCE = float(kegman_kans.conf['FOUR_BAR_DISTANCE'])
 else:
-    FOUR_BAR_DISTANCE = 4.0   # in seconds
+    FOUR_BAR_DISTANCE = 2.3   # in seconds
 if "STOPPING_DISTANCE" in kegman_kans.conf:
     STOPPING_DISTANCE = float(kegman_kans.conf['STOPPING_DISTANCE'])
 else:
@@ -40,23 +40,23 @@ CITY_SPEED = 18.05  # braking profile changes when below this speed based on fol
 
 # City braking profile changes (makes the car brake harder because it wants to be farther from the lead car - increase to brake harder)
 ONE_BAR_PROFILE = [ONE_BAR_DISTANCE, 1.3]
-ONE_BAR_PROFILE_BP = [-0.3, 2.0]
+ONE_BAR_PROFILE_BP = [-0.2, 2.0]
 
 TWO_BAR_PROFILE = [TWO_BAR_DISTANCE, 2.0]
 TWO_BAR_PROFILE_BP = [-0.2, 2.25]
 
-THREE_BAR_PROFILE = [THREE_BAR_DISTANCE, 3.8]
-THREE_BAR_PROFILE_BP = [-0.1, 4.05]
+THREE_BAR_PROFILE = [THREE_BAR_DISTANCE, 3.7]
+THREE_BAR_PROFILE_BP = [-0.1, 3.8]
 
 # Highway braking profiles
 H_ONE_BAR_PROFILE = [ONE_BAR_DISTANCE, ONE_BAR_DISTANCE+0.5]
-H_ONE_BAR_PROFILE_BP = [-0.3, 2.0]
+H_ONE_BAR_PROFILE_BP = [-0.2, 2.0]
 
 H_TWO_BAR_PROFILE = [TWO_BAR_DISTANCE, TWO_BAR_DISTANCE+0.2]
 H_TWO_BAR_PROFILE_BP = [-0.2, 2.25]
 
 H_THREE_BAR_PROFILE = [THREE_BAR_DISTANCE, THREE_BAR_DISTANCE+0.1]
-H_THREE_BAR_PROFILE_BP = [-0.1, 4.05]
+H_THREE_BAR_PROFILE_BP = [-0.1, 3.8]
 
 
 LOG_MPC = os.environ.get('LOG_MPC', False)
