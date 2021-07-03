@@ -513,6 +513,8 @@ struct ControlsState @0x97ff69c53601abf1 {
 
   # Wheel rotation
   vEgo @0 :Float32;
+  angleSteers @13 :Float32;
+  vEgoRaw @32 :Float32;
   steerOverride @20 :Bool;
 
   state @31 :OpenpilotState;
@@ -544,17 +546,15 @@ struct ControlsState @0x97ff69c53601abf1 {
   cumLagMs @15 :Float32;
   canErrorCounter @57 :UInt32;
 
-  decelForModel @63 :Bool;
+  decelForModel @62 :Bool;
   # Road Speed Limiter
-  roadLimitSpeed @64 :Int32;
-  roadLimitSpeedLeftDist @65 :Int32;
+  roadLimitSpeed @63 :Int32;
+  roadLimitSpeedLeftDist @64 :Int32;
   
   # Ui display
-  steerRatio @60 :Float32;
-  steerRateCost @61 :Float32;
-  steerActuatorDelay @62 :Float32;
-
-  angleSteers @59 :Float32;
+  steerRatio @59 :Float32;
+  steerRateCost @60 :Float32;
+  steerActuatorDelay @61 :Float32;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;
@@ -633,7 +633,6 @@ struct ControlsState @0x97ff69c53601abf1 {
   }
 
   # deprecated
-  vEgoRaw @32 :Float32;
   aEgoDEPRECATED @1 :Float32;
   canMonoTimeDEPRECATED @16 :UInt64;
   radarStateMonoTimeDEPRECATED @17 :UInt64;
@@ -647,7 +646,6 @@ struct ControlsState @0x97ff69c53601abf1 {
   aTargetMaxDEPRECATED @11 :Float32;
   rearViewCamDEPRECATED @23 :Bool;
   driverMonitoringOnDEPRECATED @43 :Bool;
-  angleSteersDEPRECATED @13 :Float32;  
   hudLeadDEPRECATED @14 :Int32;
   alertSoundDEPRECATED @45 :Text;
   angleModelBiasDEPRECATED @27 :Float32;

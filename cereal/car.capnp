@@ -90,7 +90,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupNoControl @77;
     startupMaster @78;
     startupFuzzyFingerprint @97;
-    startupNoFw @108;
+
     fcw @79;
     steerSaturated @80;
     belowEngageSpeed @84;
@@ -139,7 +139,8 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     roadCameraError @104;
     driverCameraError @105;
     wideRoadCameraError @106;
-    localizerMalfunction @107; 
+    localizerMalfunction @107;
+    startupNoFw @108;
   }
 }
 
