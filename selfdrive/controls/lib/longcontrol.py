@@ -6,20 +6,18 @@ from selfdrive.kegman_kans_conf import kegman_kans_conf
 kegman_kans = kegman_kans_conf()
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 0.5
+STOPPING_EGO_SPEED = 0.6
 STOPPING_TARGET_SPEED_OFFSET = 0.01
 STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
-STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 0.8  # brake_travel/s while releasing on restart
 BRAKE_STOPPING_TARGET = float(kegman_kans.conf['brakeStoppingTarget'])  # apply at least this amount of brake to maintain the vehicle stationary
 
 RATE = 100.0
 
 
 def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
-                             output_gb, brake_pressed, cruise_standstill, min_speed_can, d_rel):
+                             output_gb, brake_pressed, cruise_standstill, min_speed_can):
   """Update longitudinal control state machine"""
   stopping_target_speed = min_speed_can + STOPPING_TARGET_SPEED_OFFSET
   stopping_condition = (v_ego < 2.0 and cruise_standstill) or \
@@ -28,9 +26,6 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
                          brake_pressed))
 
   starting_condition = v_target > STARTING_TARGET_SPEED and not cruise_standstill
-
-  if d_rel > 0.:
-    starting_condition = starting_condition and d_rel > 3.3
 
   if not active:
     long_control_state = LongCtrlState.off
@@ -74,7 +69,7 @@ class LongControl():
     self.pid.reset()
     self.v_pid = v_pid
 
-  def update(self, active, CS, v_target, v_target_future, a_target, CP, radarState = None):
+  def update(self, active, CS, v_target, v_target_future, a_target, CP):
     """Update longitudinal control. This updates the state machine and runs a PID loop"""
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
@@ -82,18 +77,9 @@ class LongControl():
 
     # Update state machine
     output_gb = self.last_output_gb
-
-    d_rel = -1.
-    if radarState is not None and radarState.leadOne.status:
-      lead = radarState.leadOne
-      following = lead.dRel < 45.0 and lead.vLeadK > CS.vEgo and lead.aLeadK > 0.0
-      d_rel = lead.dRel
-    else:
-      following = False
-
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.cruiseState.standstill, CP.minSpeedCan, d_rel)
+                                                       CS.brakePressed, CS.cruiseState.standstill, CP.minSpeedCan)
 
     v_ego_pid = max(CS.vEgo, CP.minSpeedCan)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 

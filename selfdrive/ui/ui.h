@@ -1,26 +1,5 @@
 #pragma once
 
-#define UI_FEATURE_BRAKE 1
-#define UI_FEATURE_DASHCAM 1
-
-#define UI_FEATURE_LEFT 1
-#define UI_FEATURE_RIGHT 1
-
-#define UI_FEATURE_LEFT_Y 220
-#define UI_FEATURE_RIGHT_Y 20
-
-#define UI_FEATURE_LEFT_REL_DIST 1
-#define UI_FEATURE_LEFT_REL_SPEED 1
-#define UI_FEATURE_LEFT_REAL_STEER 1
-#define UI_FEATURE_LEFT_DESIRED_STEER 1
-
-#define UI_FEATURE_RIGHT_CPU_TEMP 1
-#define UI_FEATURE_RIGHT_AMBIENT_TEMP 1
-#define UI_FEATURE_RIGHT_BATTERY_LEVEL 1
-#define UI_FEATURE_RIGHT_GPS_ALTITUDE 1
-#define UI_FEATURE_RIGHT_GPS_ACCURACY 1
-#define UI_FEATURE_RIGHT_GPS_SATELLITE 1
-
 #include <atomic>
 #include <map>
 #include <memory>
@@ -54,6 +33,7 @@
 #define COLOR_RED nvgRGBA(201, 34, 49, 255)
 #define COLOR_OCHRE nvgRGBA(218, 111, 37, 255)
 #define COLOR_GREEN_ALPHA(x) nvgRGBA(0, 255, 0, x)
+#define COLOR_DARKGREEN nvgRGBA(44, 139, 37, 255)
 #define COLOR_BLUE_ALPHA(x) nvgRGBA(0, 0, 255, x)
 
 // TODO: this is also hardcoded in common/transformations/camera.py
@@ -131,7 +111,6 @@ typedef struct UIScene {
   float light_sensor, accel_sensor, gyro_sensor;
   bool started, ignition, is_metric, longitudinal_control, end_to_end;
   uint64_t started_frame;
-  
   // neokii dev UI
   cereal::CarControl::Reader car_control;
   cereal::ControlsState::Reader controls_state;
@@ -169,7 +148,6 @@ typedef struct UIState {
   GLuint frame_vao, frame_vbo, frame_ibo;
   mat4 rear_frame_mat;
 
-  // device state
   bool awake;
 
   Rect video_rect, viz_rect;

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <QFrame>
+#include <QMap>
 #include <QtWidgets>
+
 
 #include "selfdrive/ui/ui.h"
 
@@ -37,6 +40,7 @@ private:
   const QMap<cereal::DeviceState::NetworkType, QString> network_type = {
     {cereal::DeviceState::NetworkType::NONE, "--"},
     {cereal::DeviceState::NetworkType::WIFI, "WiFi"},
+    {cereal::DeviceState::NetworkType::ETHERNET, "ETH"},
     {cereal::DeviceState::NetworkType::CELL2_G, "2G"},
     {cereal::DeviceState::NetworkType::CELL3_G, "3G"},
     {cereal::DeviceState::NetworkType::CELL4_G, "LTE"},

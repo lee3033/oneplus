@@ -14,6 +14,7 @@ ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
 
 class CarInterface(CarInterfaceBase):
+
   @staticmethod
   def compute_gb(accel, speed):
   # Ripped from compute_gb_honda in Honda's interface.py. Works well off shelf but may need more tuning
@@ -85,10 +86,9 @@ class CarInterface(CarInterfaceBase):
       ret.minEnableSpeed = -1 * CV.MPH_TO_MS
       ret.mass = 1607. + STD_CARGO_KG
       ret.wheelbase = 2.69
-      ret.steerRatio = 15.07
+      ret.steerRatio = 15.7
       ret.steerRatioRear = 0.
-      ret.centerToFront = ret.wheelbase * 0.4  #  wild guess
-
+      ret.centerToFront = ret.wheelbase * 0.4  # wild guess
 
     elif candidate == CAR.MALIBU:
       # supports stop and go, but initial engage must be above 18mph (which include conservatism)
@@ -138,8 +138,10 @@ class CarInterface(CarInterfaceBase):
 
     # TODO: start from empirically derived lateral slip stiffness for the civic and scale by
     # mass and CG position, so all cars will have approximately similar dyn behaviors
-    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront, \
-        tire_stiffness_factor=tire_stiffness_factor)
+    ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
+                                                                         tire_stiffness_factor=tire_stiffness_factor)
+    ret.gasMaxBP = [0.]
+    ret.gasMaxV = [0.5]
 
     ret.stoppingControl = True
 
@@ -150,18 +152,18 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.deadzoneV = [.0, .14]
 
     ret.longitudinalTuning.kpBP = [0., 15., 22., 33.]
-    ret.longitudinalTuning.kpV = [1.2, 2.0, 2.2, 1.8]
-    ret.longitudinalTuning.kiBP = [0., 3., 7., 12., 20., 27.]
-    ret.longitudinalTuning.kiV = [.38, .36, .34, .35, .33, .3]
-    ret.longitudinalTuning.kfBP = [13.8, 33.]
-    ret.longitudinalTuning.kfV = [1.3, 0.9]
-    ret.brakeMaxBP = [0, 19.7, 33.]
-    ret.brakeMaxV = [1.5, 1., 0.6]
+    ret.longitudinalTuning.kpV = [1.9, 2.5, 2.1, 1.8]
+    ret.longitudinalTuning.kiBP = [0., 13.8, 33.]
+    ret.longitudinalTuning.kiV = [.39, .36, .3]
+    ret.longitudinalTuning.kfBP = [0., 13.8, 33.]
+    ret.longitudinalTuning.kfV = [1.2, 1.6, 1.0]
+    ret.brakeMaxBP = [0, 13.8, 33.]
+    ret.brakeMaxV = [1.8, 1.5, 0.7]
 
     ret.stoppingBrakeRate = 0.2 # reach stopping target smoothly
     ret.startingBrakeRate = 2.0 # release brakes fast
     ret.startAccel = 1.2 # Accelerate from 0 faster
-    ret.steerLimitTimer = 0.7
+    ret.steerLimitTimer = 1.7
     ret.radarTimeStep = 0.0667  # GM radar runs at 15Hz instead of standard 20Hz
 
     return ret
@@ -181,7 +183,7 @@ class CarInterface(CarInterfaceBase):
     ret.canValid = self.cp.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
 
-    ret.engineRPM = self.CS.engineRPM
+    ret.engineRPM = self.CS.engineRPM #for RPM
 
     buttonEvents = []
 
@@ -223,7 +225,6 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.belowEngageSpeed)
     if self.CS.park_brake:
       events.add(EventName.parkBrake)
-
     if self.CS.autoHoldActivated:
       events.add(car.CarEvent.EventName.autoHoldActivated)
 
@@ -251,10 +252,10 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.parkBrake)
     if ret.cruiseState.standstill:
       events.add(EventName.resumeRequired)
-    if self.CS.pcm_acc_status == AccState.FAULTED:
-      events.add(EventName.accFaulted)
-    if ret.vEgo < self.CP.minSteerSpeed:
-      events.add(car.CarEvent.EventName.belowSteerSpeed)
+#    if self.CS.pcm_acc_status == AccState.FAULTED:
+#      events.add(EventName.accFaulted)
+#    if ret.vEgo < self.CP.minSteerSpeed:
+#      events.add(car.CarEvent.EventName.belowSteerSpeed)
 
     # handle button presses
     for b in ret.buttonEvents:

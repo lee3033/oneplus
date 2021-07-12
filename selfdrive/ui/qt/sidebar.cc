@@ -1,12 +1,14 @@
 #include "selfdrive/ui/qt/sidebar.h"
 
+#include <QMouseEvent>
+
 #include "selfdrive/ui/qt/qt_window.h"
 #include "selfdrive/common/util.h"
 #include "selfdrive/hardware/hw.h"
 #include "selfdrive/ui/qt/util.h"
 
 void Sidebar::drawMetric(QPainter &p, const QString &label, const QString &val, QColor c, int y) {
-  const QRect rect = {30, y, 240, val.isEmpty() ? (label.contains("\n") ? 124 : 100) : 148};
+  const QRect rect = {30, y, 240, val.isEmpty() ? (label.contains("\n") ? 130 : 130) : 135};
 
   p.setPen(Qt::NoPen);
   p.setBrush(QBrush(c));
@@ -22,14 +24,14 @@ void Sidebar::drawMetric(QPainter &p, const QString &label, const QString &val, 
 
   p.setPen(QColor(0xff, 0xff, 0xff));
   if (val.isEmpty()) {
-    configFont(p, "Open Sans", 35, "Bold");
+    configFont(p, "Open Sans", 40, "Regular");
     const QRect r = QRect(rect.x() + 35, rect.y(), rect.width() - 50, rect.height());
     p.drawText(r, Qt::AlignCenter, label);
   } else {
-    configFont(p, "Open Sans", 58, "Bold");
-    p.drawText(rect.x() + 50, rect.y() + 71, val);
+    configFont(p, "Open Sans", 58, "Regular");
+    p.drawText(rect.x() + 50, rect.y() + 61, val);
     configFont(p, "Open Sans", 35, "Regular");
-    p.drawText(rect.x() + 50, rect.y() + 50 + 77, label);
+    p.drawText(rect.x() + 50, rect.y() + 35 + 77, label);
   }
 }
 
@@ -93,8 +95,8 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   p.setRenderHint(QPainter::Antialiasing);
 
   //battery
-  QRect  rect(55, 293, 96, 36);
-  QRect  bq(60, 298, int(76* m_batteryPercent * 0.01), 25);
+  QRect  rect(45, 293, 96, 36);
+  QRect  bq(50, 298, int(76* m_batteryPercent * 0.01), 25);
   QBrush bgBrush("#149948");
   p.fillRect(bq,  bgBrush);
   p.drawImage(rect, battery_imgs[m_battery_img]);
@@ -104,7 +106,7 @@ void Sidebar::paintEvent(QPaintEvent *event) {
 
   char battery_str[32];
 
-  const QRect bt = QRect(180, 293, event->rect().width(), 30);
+  const QRect bt = QRect(170, 288, event->rect().width(), 50);
   snprintf(battery_str, sizeof(battery_str), "%d%%", m_batteryPercent);
   p.drawText(bt, Qt::AlignLeft, battery_str);
 
@@ -119,7 +121,7 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   configFont(p, "Open Sans", 30, "Regular");
   p.setPen(QColor(0xff, 0xff, 0xff));
 
-  const QRect r = QRect(0, 247, event->rect().width(), 50);
+  const QRect r = QRect(-15, 237, event->rect().width(), 50);
 
   if(Hardware::EON() && net_type == network_type[cereal::DeviceState::NetworkType::WIFI])
     p.drawText(r, Qt::AlignCenter, wifi_addr);
@@ -128,7 +130,7 @@ void Sidebar::paintEvent(QPaintEvent *event) {
 
   // metrics
   configFont(p, "Open Sans", 35, "Regular");
-  drawMetric(p, "시스템온도", QString("%1°C").arg(temp_val), temp_status, 338);
+  drawMetric(p, "시스템온도", QString("%1°C").arg(temp_val), temp_status, 355);
   drawMetric(p, panda_str, "", panda_status, 518);
   drawMetric(p, "인터넷\n" + connect_str, "", connect_status, 676);
 }

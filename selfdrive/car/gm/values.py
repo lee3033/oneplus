@@ -7,7 +7,7 @@ Ecu = car.CarParams.Ecu
 class CarControllerParams():
   def __init__(self):
     self.STEER_MAX = 300
-    self.STEER_STEP = 3              # how often we update the steer cmd
+    self.STEER_STEP = 4              # how often we update the steer cmd
     self.STEER_DELTA_UP = 8          # ~0.75s time to peak torque (255/50hz/0.75s)
     self.STEER_DELTA_DOWN = 12       # ~0.3s from peak torque to zero
     self.MIN_STEER_SPEED = 3.
@@ -28,7 +28,7 @@ class CarControllerParams():
     self.MAX_ACC_REGEN = 1404  # ACC Regen braking is slightly less powerful than max regen paddle
     self.GAS_LOOKUP_BP = [-0.25, 0., 0.5]
     self.GAS_LOOKUP_V = [self.MAX_ACC_REGEN, self.ZERO_GAS, MAX_GAS]
-    self.BRAKE_LOOKUP_BP = [-1., -0.25]
+    self.BRAKE_LOOKUP_BP = [-1.2, -0.25]
     self.BRAKE_LOOKUP_V = [MAX_BRAKE, 0]
 
 class CAR:

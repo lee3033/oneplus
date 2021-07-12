@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import datetime
+import json
 import os
+import subprocess
 import time
 from pathlib import Path
 from typing import Dict, Optional, Tuple
@@ -10,6 +12,7 @@ from smbus2 import SMBus
 
 import cereal.messaging as messaging
 from cereal import log
+from common.basedir import BASEDIR
 from common.filter_simple import FirstOrderFilter
 from common.numpy_fast import clip, interp
 from common.params import Params, ParamKeyType
@@ -32,13 +35,12 @@ NetworkType = log.DeviceState.NetworkType
 NetworkStrength = log.DeviceState.NetworkStrength
 CURRENT_TAU = 15.   # 15s time constant
 CPU_TEMP_TAU = 5.   # 5s time constant
-DAYS_NO_CONNECTIVITY_MAX = 9997  # do not allow to engage after a week without internet
-DAYS_NO_CONNECTIVITY_PROMPT = 9994  # send an offroad prompt after 4 days with no internet
+DAYS_NO_CONNECTIVITY_MAX = 7  # do not allow to engage after a week without internet
+DAYS_NO_CONNECTIVITY_PROMPT = 4  # send an offroad prompt after 4 days with no internet
 DISCONNECT_TIMEOUT = 5.  # wait 5 seconds before going offroad after disconnect so you get an alert
 
 prev_offroad_states: Dict[str, Tuple[bool, Optional[str]]] = {}
 
-LEON = False
 last_eon_fan_val = None
 
 
@@ -64,43 +66,24 @@ def read_thermal(thermal_config):
 
 
 def setup_eon_fan():
-  global LEON
-
   os.system("echo 2 > /sys/module/dwc3_msm/parameters/otg_switch")
 
-  bus = SMBus(7, force=True)
-  try:
-    bus.write_byte_data(0x21, 0x10, 0xf)   # mask all interrupts
-    bus.write_byte_data(0x21, 0x03, 0x1)   # set drive current and global interrupt disable
-    bus.write_byte_data(0x21, 0x02, 0x2)   # needed?
-    bus.write_byte_data(0x21, 0x04, 0x4)   # manual override source
-  except IOError:
-    print("LEON detected")
-    LEON = True
-  bus.close()
 
 def set_eon_fan(val):
-  global LEON, last_eon_fan_val
+  global last_eon_fan_val
 
   if last_eon_fan_val is None or last_eon_fan_val != val:
     bus = SMBus(7, force=True)
-    if LEON:
-      try:
-        i = [0x1, 0x3 | 0, 0x3 | 0x08, 0x3 | 0x10][val]
-        bus.write_i2c_block_data(0x3d, 0, [i])
-      except IOError:
-        # tusb320
-        if val == 0:
-          bus.write_i2c_block_data(0x67, 0xa, [0])
-          #bus.write_i2c_block_data(0x67, 0x45, [1<<2])
-        else:
-          #bus.write_i2c_block_data(0x67, 0x45, [0])
-          bus.write_i2c_block_data(0x67, 0xa, [0x20])
-          bus.write_i2c_block_data(0x67, 0x8, [(val - 1) << 6])
-    else:
-      bus.write_byte_data(0x21, 0x04, 0x2)
-      bus.write_byte_data(0x21, 0x03, (val*2)+1)
-      bus.write_byte_data(0x21, 0x04, 0x4)
+    try:
+      i = [0x1, 0x3 | 0, 0x3 | 0x08, 0x3 | 0x10][val]
+      bus.write_i2c_block_data(0x3d, 0, [i])
+    except IOError:
+      # tusb320
+      if val == 0:
+        bus.write_i2c_block_data(0x67, 0xa, [0])
+      else:
+        bus.write_i2c_block_data(0x67, 0xa, [0x20])
+        bus.write_i2c_block_data(0x67, 0x8, [(val - 1) << 6])
     bus.close()
     last_eon_fan_val = val
 
@@ -198,6 +181,7 @@ def thermald_thread():
   network_strength = NetworkStrength.unknown
   wifiIpAddress = 'N/A'
   network_info = None
+  registered_count = 0
 
   current_filter = FirstOrderFilter(0., CURRENT_TAU, DT_TRML)
   cpu_temp_filter = FirstOrderFilter(0., CPU_TEMP_TAU, DT_TRML)
@@ -231,6 +215,15 @@ def thermald_thread():
         except Exception:
           pass
     cloudlog.event("CPR", data=cpr_data)
+
+    # modem logging
+    try:
+      binpath = os.path.join(BASEDIR, "selfdrive/hardware/eon/rat")
+      out = subprocess.check_output([binpath], encoding='utf8').strip()
+      dat = json.loads(out.splitlines()[1])
+      cloudlog.event("NV data", data=dat)
+    except Exception:
+      pass
 
   while 1:
     pandaState = messaging.recv_sock(pandaState_sock, wait=True)
@@ -281,12 +274,23 @@ def thermald_thread():
         network_strength = HARDWARE.get_network_strength(network_type)
         network_info = HARDWARE.get_network_info()  # pylint: disable=assignment-from-none
         wifiIpAddress = HARDWARE.get_ip_address()
+        if TICI and (network_info.get('state', None) == "REGISTERED"):
+          registered_count += 1
+        else:
+          registered_count = 0
+
+        if registered_count > 10:
+          cloudlog.warning(f"Modem stuck in registered state {network_info}. nmcli conn up lte")
+          os.system("nmcli conn up lte")
+          registered_count = 0
+
       except Exception:
         cloudlog.exception("Error getting network status")
 
     msg.deviceState.freeSpacePercent = get_available_percent(default=100.0)
     msg.deviceState.memoryUsagePercent = int(round(psutil.virtual_memory().percent))
     msg.deviceState.cpuUsagePercent = int(round(psutil.cpu_percent()))
+    msg.deviceState.gpuUsagePercent = int(round(HARDWARE.get_gpu_usage_percent()))
     msg.deviceState.networkType = network_type
     msg.deviceState.networkStrength = network_strength
     if network_info is not None:
@@ -341,45 +345,45 @@ def thermald_thread():
     # **** starting logic ****
 
     # Check for last update time and display alerts if needed
-    # now = datetime.datetime.utcnow()
-    #
-    # # show invalid date/time alert
-    # startup_conditions["time_valid"] = (now.year > 2020) or (now.year == 2020 and now.month >= 10)
-    # set_offroad_alert_if_changed("Offroad_InvalidTime", (not startup_conditions["time_valid"]))
-    #
-    # # Show update prompt
-    # try:
-    #   last_update = datetime.datetime.fromisoformat(params.get("LastUpdateTime", encoding='utf8'))
-    # except (TypeError, ValueError):
-    #   last_update = now
-    # dt = now - last_update
-    #
-    # update_failed_count = params.get("UpdateFailedCount")
-    # update_failed_count = 0 if update_failed_count is None else int(update_failed_count)
-    # last_update_exception = params.get("LastUpdateException", encoding='utf8')
-    #
-    # if update_failed_count > 15 and last_update_exception is not None:
-    #   if current_branch in ["release2", "dashcam"]:
-    #     extra_text = "Ensure the software is correctly installed"
-    #   else:
-    #     extra_text = last_update_exception
-    #
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", False)
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", False)
-    #   set_offroad_alert_if_changed("Offroad_UpdateFailed", True, extra_text=extra_text)
-    # elif dt.days > DAYS_NO_CONNECTIVITY_MAX and update_failed_count > 1:
-    #   set_offroad_alert_if_changed("Offroad_UpdateFailed", False)
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", False)
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", True)
-    # elif dt.days > DAYS_NO_CONNECTIVITY_PROMPT:
-    #   remaining_time = str(max(DAYS_NO_CONNECTIVITY_MAX - dt.days, 0))
-    #   set_offroad_alert_if_changed("Offroad_UpdateFailed", False)
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", False)
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", True, extra_text=f"{remaining_time} days.")
-    # else:
-    #   set_offroad_alert_if_changed("Offroad_UpdateFailed", False)
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", False)
-    #   set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", False)
+    now = datetime.datetime.utcnow()
+
+    # show invalid date/time alert
+    startup_conditions["time_valid"] = True #(now.year > 2020) or (now.year == 2020 and now.month >= 10)
+    set_offroad_alert_if_changed("Offroad_InvalidTime", (not startup_conditions["time_valid"]))
+
+    # Show update prompt
+    try:
+      last_update = now #datetime.datetime.fromisoformat(params.get("LastUpdateTime", encoding='utf8'))
+    except (TypeError, ValueError):
+      last_update = now
+    dt = now - last_update
+
+    update_failed_count = 0 #params.get("UpdateFailedCount")
+    update_failed_count = 0 if update_failed_count is None else int(update_failed_count)
+    last_update_exception = params.get("LastUpdateException", encoding='utf8')
+
+    if update_failed_count > 15 and last_update_exception is not None:
+      if current_branch in ["release2", "dashcam"]:
+        extra_text = "Ensure the software is correctly installed"
+      else:
+        extra_text = last_update_exception
+
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", False)
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", False)
+      set_offroad_alert_if_changed("Offroad_UpdateFailed", True, extra_text=extra_text)
+    elif dt.days > DAYS_NO_CONNECTIVITY_MAX and update_failed_count > 1:
+      set_offroad_alert_if_changed("Offroad_UpdateFailed", False)
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", False)
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", True)
+    elif dt.days > DAYS_NO_CONNECTIVITY_PROMPT:
+      remaining_time = str(max(DAYS_NO_CONNECTIVITY_MAX - dt.days, 0))
+      set_offroad_alert_if_changed("Offroad_UpdateFailed", False)
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", False)
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", True, extra_text=f"{remaining_time} days.")
+    else:
+      set_offroad_alert_if_changed("Offroad_UpdateFailed", False)
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", False)
+      set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", False)
 
     #startup_conditions["up_to_date"] = params.get("Offroad_ConnectivityNeeded") is None or params.get("DisableUpdates") == b"1"
     startup_conditions["not_uninstalling"] = not params.get_bool("DoUninstall")
@@ -392,7 +396,7 @@ def thermald_thread():
     # with 2% left, we killall, otherwise the phone will take a long time to boot
     startup_conditions["free_space"] = msg.deviceState.freeSpacePercent > 2
     startup_conditions["completed_training"] = params.get("CompletedTrainingVersion") == training_version or \
-                                               (current_branch in ['dashcam', 'dashcam-staging'])
+                                               params.get_bool("Passive")
     startup_conditions["not_driver_view"] = not params.get_bool("IsDriverViewEnabled")
     startup_conditions["not_taking_snapshot"] = not params.get_bool("IsTakingSnapshot")
     # if any CPU gets above 107 or the battery gets above 63, kill all processes
@@ -480,16 +484,16 @@ def thermald_thread():
     startup_conditions_prev = startup_conditions.copy()
 
     # report to server once every 10 minutes
-    # if (count % int(600. / DT_TRML)) == 0:
-    #   if EON and started_ts is None and msg.deviceState.memoryUsagePercent > 40:
-    #     cloudlog.event("High offroad memory usage", mem=msg.deviceState.memoryUsagePercent)
-    #
-    #   location = messaging.recv_sock(location_sock)
-    #   cloudlog.event("STATUS_PACKET",
-    #                  count=count,
-    #                  pandaState=(strip_deprecated_keys(pandaState.to_dict()) if pandaState else None),
-    #                  location=(strip_deprecated_keys(location.gpsLocationExternal.to_dict()) if location else None),
-    #                  deviceState=strip_deprecated_keys(msg.to_dict()))
+    if (count % int(600. / DT_TRML)) == 0:
+      if EON and started_ts is None and msg.deviceState.memoryUsagePercent > 40:
+        cloudlog.event("High offroad memory usage", mem=msg.deviceState.memoryUsagePercent)
+
+      location = messaging.recv_sock(location_sock)
+      cloudlog.event("STATUS_PACKET",
+                     count=count,
+                     pandaState=(strip_deprecated_keys(pandaState.to_dict()) if pandaState else None),
+                     location=(strip_deprecated_keys(location.gpsLocationExternal.to_dict()) if location else None),
+                     deviceState=strip_deprecated_keys(msg.to_dict()))
 
     count += 1
 

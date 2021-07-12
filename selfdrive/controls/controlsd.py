@@ -10,13 +10,13 @@ from common.realtime import sec_since_boot, config_realtime_process, Priority, R
 from common.profiler import Profiler
 from common.params import Params, put_nonblocking
 import cereal.messaging as messaging
-# from selfdrive.car.gm.values import CAR
 from selfdrive.config import Conversions as CV
 from selfdrive.swaglog import cloudlog
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
 from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET, TRAJECTORY_SIZE
 from selfdrive.controls.lib.drive_helpers import update_v_cruise, initialize_v_cruise
+from selfdrive.controls.lib.drive_helpers import get_lag_adjusted_curvature
 from selfdrive.controls.lib.longcontrol import LongControl, STARTING_TARGET_SPEED
 from selfdrive.controls.lib.latcontrol_pid import LatControlPID
 from selfdrive.controls.lib.latcontrol_indi import LatControlINDI
@@ -63,12 +63,16 @@ class Controls:
     if TICI:
       self.camera_packets.append("wideRoadCameraState")
 
+    params = Params()
+    self.joystick_mode = params.get_bool("JoystickDebugMode")
+    joystick_packet = ['testJoystick'] if self.joystick_mode else []
+
     self.sm = sm
     if self.sm is None:
       ignore = ['driverCameraState', 'managerState'] if SIMULATION else None
       self.sm = messaging.SubMaster(['deviceState', 'pandaState', 'modelV2', 'liveCalibration',
                                      'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
-                                     'managerState', 'liveParameters', 'radarState'] + self.camera_packets,
+                                     'managerState', 'liveParameters', 'radarState'] + self.camera_packets + joystick_packet,
                                      ignore_alive=ignore, ignore_avg_freq=['radarState', 'longitudinalPlan'])
 
     self.can_sock = can_sock
@@ -88,10 +92,8 @@ class Controls:
     self.CI, self.CP = get_car(self.can_sock, self.pm.sock['sendcan'], has_relay)
 
     # read params
-    params = Params()
     self.is_metric = params.get_bool("IsMetric")
     self.is_ldw_enabled = params.get_bool("IsLdwEnabled")
-    self.enable_lte_onroad = params.get_bool("EnableLteOnroad")
     community_feature_toggle = params.get_bool("CommunityFeaturesToggle")
     openpilot_enabled_toggle = params.get_bool("OpenpilotEnabledToggle")
     passive = params.get_bool("Passive") or not openpilot_enabled_toggle
@@ -149,7 +151,6 @@ class Controls:
     self.events_prev = []
     self.current_alert_types = [ET.PERMANENT]
     self.logged_comm_issue = False
-    self.angle_steers_des = 0.
     self.road_limit_speed = 0
     self.road_limit_left_dist = 0
     self.v_cruise_kph_limit = 0
@@ -169,6 +170,9 @@ class Controls:
       self.events.add(EventName.carUnrecognized, static=True)
     elif self.read_only:
       self.events.add(EventName.dashcamMode, static=True)
+    elif self.joystick_mode:
+      self.events.add(EventName.joystickDebug, static=True)
+      self.startup_event = None
 
     # controlsd is driven by can recv, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
@@ -197,11 +201,11 @@ class Controls:
       self.events.add(EventName.lowBattery)
     if self.sm['deviceState'].thermalStatus >= ThermalStatus.red:
       self.events.add(EventName.overheat)
-    if self.sm['deviceState'].freeSpacePercent < 7:
+    if self.sm['deviceState'].freeSpacePercent < 7 and not SIMULATION:
       # under 7% of space free no enable allowed
       self.events.add(EventName.outOfSpace)
     # TODO: make tici threshold the same
-    if self.sm['deviceState'].memoryUsagePercent > (90 if TICI else 65):
+    if self.sm['deviceState'].memoryUsagePercent > (90 if TICI else 65) and not SIMULATION:
       self.events.add(EventName.lowMemory)
 
     # Alert if fan isn't spinning for 5 seconds
@@ -271,7 +275,7 @@ class Controls:
     if self.sm['longitudinalPlan'].fcw or (self.enabled and self.sm['modelV2'].meta.hardBrakePredicted):
       self.events.add(EventName.fcw)
 
-    if TICI and self.enable_lte_onroad:
+    if TICI:
       logs = messaging.drain_sock(self.log_sock, wait_for_one=False)
       messages = []
       for m in logs:
@@ -326,6 +330,7 @@ class Controls:
 
     all_valid = CS.canValid and self.sm.all_alive_and_valid()
     if not self.initialized and (all_valid or self.sm.frame * DT_CTRL > 2.0):
+      self.CI.init(self.CP, self.can_sock, self.pm.sock['sendcan'])
       self.initialized = True
       Params().put_bool("ControlsReady", True)
 
@@ -361,7 +366,10 @@ class Controls:
         dy = np.gradient(y, x)
         d2y = np.gradient(dy, x)
         curv = d2y / (1 + dy ** 2) ** 1.5
-        curv = curv[5:TRAJECTORY_SIZE - 10]
+
+        start = int(interp(v_ego, [10., 35.], [5, TRAJECTORY_SIZE-10]))
+        curv = curv[start:min(start+10, TRAJECTORY_SIZE)]
+#        curv = curv[5:TRAJECTORY_SIZE - 10]
         a_y_max = 2.975 - v_ego * 0.0375  # ~1.85 @ 75mph, ~2.6 @ 25mph
         v_curvature = np.sqrt(a_y_max / np.clip(np.abs(curv), 1e-4, None))
         model_speed = np.mean(v_curvature) * 0.93
@@ -425,7 +433,7 @@ class Controls:
         if self.state == State.enabled:
           if self.events.any(ET.SOFT_DISABLE):
             self.state = State.softDisabling
-            self.soft_disable_timer = 50   # 0.5s
+            self.soft_disable_timer = 300   # 3s
             self.current_alert_types.append(ET.SOFT_DISABLE)
 
         # SOFT DISABLING
@@ -506,11 +514,31 @@ class Controls:
     a_acc_sol = long_plan.aStart + (dt / LON_MPC_STEP) * (long_plan.aTarget - long_plan.aStart)
     v_acc_sol = long_plan.vStart + dt * (a_acc_sol + long_plan.aStart) / 2.0
 
-    # Gas/Brake PID loop
-    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
+    if not self.joystick_mode:
+      # Gas/Brake PID loop
+      actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, long_plan.vTargetFuture, a_acc_sol, self.CP)
 
-    # Steering PID loop and lateral MPC
-    actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(self.active, CS, self.CP, self.VM, params, lat_plan)
+      # Steering PID loop and lateral MPC
+      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,
+                                                                             lat_plan.psis,
+                                                                             lat_plan.curvatures,
+                                                                             lat_plan.curvatureRates)
+      actuators.steer, actuators.steeringAngleDeg, lac_log = self.LaC.update(self.active, CS, self.CP, self.VM, params,
+                                                                             desired_curvature, desired_curvature_rate)
+    else:
+      lac_log = log.ControlsState.LateralDebugState.new_message()
+      if self.sm.rcv_frame['testJoystick'] > 0 and self.active:
+        gb = clip(self.sm['testJoystick'].axes[0], -1, 1)
+        actuators.gas, actuators.brake = max(gb, 0), max(-gb, 0)
+
+        steer = clip(self.sm['testJoystick'].axes[1], -1, 1)
+        # max angle is 45 for angle-based cars
+        actuators.steer, actuators.steeringAngleDeg = steer, steer * 45.
+
+        lac_log.active = True
+        lac_log.steeringAngleDeg = CS.steeringAngleDeg
+        lac_log.output = steer
+        lac_log.saturated = abs(steer) >= 0.9
 
     # Check for difference between desired angle and angle for angle based control
     angle_control_saturated = self.CP.steerControlType == car.CarParams.SteerControlType.angle and \
@@ -546,6 +574,9 @@ class Controls:
     CC.cruiseControl.override = True
     CC.cruiseControl.cancel = not self.CP.enableCruise or (not self.enabled and CS.cruiseState.enabled)
 
+    if self.joystick_mode and self.sm.rcv_frame['testJoystick'] > 0 and self.sm['testJoystick'].buttons[0]:
+      CC.cruiseControl.cancel = True
+
     # Some override values for Honda
     # brake discount removes a sharp nonlinearity
     brake_discount = (1.0 - clip(actuators.brake * 3., 0.0, 1.0))
@@ -572,6 +603,7 @@ class Controls:
       l_lane_change_prob = meta.desirePrediction[Desire.laneChangeLeft - 1]
       r_lane_change_prob = meta.desirePrediction[Desire.laneChangeRight - 1]
 
+# Neokii's cameraOffset
       cameraOffset = ntune_get("cameraOffset")
       l_lane_close = left_lane_visible and (self.sm['modelV2'].laneLines[1].y[0] > -(1.08 + cameraOffset))
       r_lane_close = right_lane_visible and (self.sm['modelV2'].laneLines[2].y[0] < (1.08 - cameraOffset))
@@ -598,12 +630,8 @@ class Controls:
 
     # Curvature & Steering angle
     params = self.sm['liveParameters']
-    lat_plan = self.sm['lateralPlan']
-
     steer_angle_without_offset = math.radians(CS.steeringAngleDeg - params.angleOffsetAverageDeg)
     curvature = -self.VM.calc_curvature(steer_angle_without_offset, CS.vEgo)
-    self.angle_steers_des = math.degrees(self.VM.get_steer_from_curvature(-lat_plan.curvature, CS.vEgo))
-    self.angle_steers_des += params.angleOffsetDeg
 
     # controlsState
     dat = messaging.new_message('controlsState')
@@ -621,14 +649,7 @@ class Controls:
     controlsState.lateralPlanMonoTime = self.sm.logMonoTime['lateralPlan']
     controlsState.enabled = self.enabled
     controlsState.active = self.active
-
-#   bellow 3Lines are for Wheel Rotation
-    controlsState.vEgo = CS.vEgo
-    controlsState.vEgoRaw = CS.vEgoRaw
-    controlsState.steerOverride = CS.steeringPressed
-
     controlsState.curvature = curvature
-    controlsState.steeringAngleDesiredDeg = self.angle_steers_des
     controlsState.state = self.state
     controlsState.engageable = not self.events.any(ET.NO_ENTRY)
     controlsState.longControlState = self.LoC.long_control_state
@@ -652,7 +673,9 @@ class Controls:
     controlsState.steerRateCost = ntune_get('steerRateCost')
     controlsState.steerActuatorDelay = ntune_get('steerActuatorDelay')
 
-    if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
+    if self.joystick_mode:
+      controlsState.lateralControlState.debugState = lac_log
+    elif self.CP.steerControlType == car.CarParams.SteerControlType.angle:
       controlsState.lateralControlState.angleState = lac_log
     elif self.CP.lateralTuning.which() == 'pid':
       controlsState.lateralControlState.pidState = lac_log

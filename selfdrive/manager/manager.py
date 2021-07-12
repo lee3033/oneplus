@@ -23,6 +23,7 @@ from selfdrive.version import dirty, get_git_commit, version, origin, branch, co
                               terms_version, training_version, comma_remote, \
                               get_git_branch, get_git_remote
 from selfdrive.hardware.eon.apk import system
+sys.path.append(os.path.join(BASEDIR, "pyextra"))
 
 def manager_init():
 
@@ -36,12 +37,9 @@ def manager_init():
     ("CompletedTrainingVersion", "0"),
     ("HasAcceptedTerms", "0"),
     ("OpenpilotEnabledToggle", "1"),
-    ("IsMetric", "1"),
   ]
   if not PC:
     default_params.append(("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')))
-  if TICI:
-    default_params.append(("EnableLteOnroad", "1"))
 
   if params.get_bool("RecordFrontLock"):
     params.put_bool("RecordFront", True)

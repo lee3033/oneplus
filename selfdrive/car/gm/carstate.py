@@ -22,12 +22,13 @@ class CarState(CarStateBase):
     self.distance_button = 0
     self.follow_level = 2
     self.lkMode = True
-#Autohold
+#bellow 5lines for Autohold
     self.autoHold = False
     self.autoHoldActive = False
     self.autoHoldActivated = False
     self.regenPaddlePressed = 0
     self.cruiseMain = False
+#Engine Rpm	
     self.engineRPM = 0
 
 
@@ -81,13 +82,17 @@ class CarState(CarStateBase):
 
     self.park_brake = pt_cp.vl["EPBStatus"]["EPBClosed"]
     ret.cruiseState.available = bool(pt_cp.vl["ECMEngineStatus"]["CruiseMainOn"])
+    # bellow 1 line for AutoHold
     self.cruiseMain = ret.cruiseState.available
+
     ret.espDisabled = pt_cp.vl["ESPStatus"]["TractionControlOn"] != 1
     self.pcm_acc_status = pt_cp.vl["AcceleratorPedal2"]["CruiseState"]
 
     ret.brakePressed = ret.brake > 1e-5
     # Regen braking is braking
     if self.car_fingerprint == CAR.VOLT:
+    # bellow 3 lines for AutoHold	
+      # ret.brakePressed = ret.brakePressed or bool(pt_cp.vl["EBCMRegenPaddle"]["RegenPaddle"])
       self.regenPaddlePressed = bool(pt_cp.vl["EBCMRegenPaddle"]["RegenPaddle"])
       ret.brakePressed = ret.brakePressed or self.regenPaddlePressed
 
@@ -103,13 +108,13 @@ class CarState(CarStateBase):
 # bellow line for Brake Light	
     ret.brakeLights = ch_cp.vl["EBCMFrictionBrakeStatus"]["FrictionBrakePressure"] != 0 or ret.brakePressed
 
-# belows are for GM's Autohold
+## bellow 5 Lines are for Autohold
     if kegman_kans.conf['AutoHold'] == "1":
       self.autoHold = True
     else:
       self.autoHold = False
-
     ret.autoHoldActivated = self.autoHoldActivated
+
     return ret
 # 2 lines for 3 Bar distance
   def get_follow_level(self):
@@ -161,7 +166,7 @@ class CarState(CarStateBase):
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CanBus.POWERTRAIN, enforce_checks=False)
 
-# all bellows are for Brake Light
+## all bellows are for Brake Light
   @staticmethod
   def get_chassis_can_parser(CP):
     # this function generates lists for signal, messages and initial values

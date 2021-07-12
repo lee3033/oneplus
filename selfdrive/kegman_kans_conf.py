@@ -39,24 +39,24 @@ class kegman_kans_conf():
         self.config = json.load(f)
 
       if "battPercOff" not in self.config:
-        self.config.update({"battPercOff":""})
-        self.config.update({"carVoltageMinEonShutdown":""})
-        self.config.update({"brakeStoppingTarget":""})
+        self.config.update({"battPercOff":"80"})
+        self.config.update({"carVoltageMinEonShutdown":"12000"})
+        self.config.update({"brakeStoppingTarget":"0.65"})
         self.element_updated = True
 
       if "tuneGernby" not in self.config:
-        self.config.update({"tuneGernby":""})
-        self.config.update({"Kp":""})
-        self.config.update({"Ki":""})
-        self.config.update({"Kd":""})
+        self.config.update({"tuneGernby":"1"})
+        self.config.update({"Kp":"0.192"})
+        self.config.update({"Ki":"0.021"})
+        self.config.update({"Kd":"0.00032"})
         self.element_updated = True
 
       if "liveParams" not in self.config:
-        self.config.update({"liveParams":""})
+        self.config.update({"liveParams":"1"})
         self.element_updated = True
 
       if "useLiveSteerRatio" not in self.config:
-        self.config.update({"useLiveSteerRatio":""})
+        self.config.update({"useLiveSteerRatio":"1"})
         self.element_updated = True
 
       if "steerRatio" not in self.config:
@@ -66,43 +66,43 @@ class kegman_kans_conf():
         self.element_updated = True
 
       if "ONE_BAR_DISTANCE" not in self.config:
-        self.config.update({"ONE_BAR_DISTANCE":""})
-        self.config.update({"TWO_BAR_DISTANCE":""})
-        self.config.update({"THREE_BAR_DISTANCE":""})
-        self.config.update({"STOPPING_DISTANCE":""})
+        self.config.update({"ONE_BAR_DISTANCE":"1.0"})
+        self.config.update({"TWO_BAR_DISTANCE":"1.8"})
+        self.config.update({"THREE_BAR_DISTANCE":"3.6"})
+        self.config.update({"STOPPING_DISTANCE":"1.5"})
         self.element_updated = True
 
       if "deadzone" not in self.config:
-        self.config.update({"deadzone":""})
+        self.config.update({"deadzone":"0"})
         self.element_updated = True
 
       if "1barBP0" not in self.config:
-        self.config.update({"1barBP0":""})
-        self.config.update({"1barBP1":""})
-        self.config.update({"2barBP0":""})
-        self.config.update({"2barBP1":""})
-        self.config.update({"3barBP0":""})
-        self.config.update({"3barBP1":""})
+        self.config.update({"1barBP0":"-0.3"})
+        self.config.update({"1barBP1":"1.8"})
+        self.config.update({"2barBP0":"-0.2"})
+        self.config.update({"2barBP1":"2.25"})
+        self.config.update({"3barBP0":"-0.1"})
+        self.config.update({"3barBP1":"4.05"})
         self.element_updated = True
 
       if "1barMax" not in self.config:
-        self.config.update({"1barMax":""})
-        self.config.update({"2barMax":""})
-        self.config.update({"3barMax":""})
+        self.config.update({"1barMax":"1.3"})
+        self.config.update({"2barMax":"2.0"})
+        self.config.update({"3barMax":"3.85"})
         self.element_updated = True
 
       if "1barHwy" not in self.config:
-        self.config.update({"1barHwy":""})
-        self.config.update({"2barHwy":""})
-        self.config.update({"3barHwy":""})
+        self.config.update({"1barHwy":"0.4"})
+        self.config.update({"2barHwy":"0.3"})
+        self.config.update({"3barHwy":"0.2"})
         self.element_updated = True
 
       if "slowOnCurves" not in self.config:
-        self.config.update({"slowOnCurves":""})
+        self.config.update({"slowOnCurves":"1"})
         self.element_updated = True
 
       if "Kf" not in self.config:
-        self.config.update({"Kf":""})
+        self.config.update({"Kf":"0.00007"})
         self.element_updated = True
 
       if "sR_boost" not in self.config:
@@ -120,33 +120,33 @@ class kegman_kans_conf():
       if "ALCtimer" not in self.config:
         self.config.update({"ALCtimer":""})
         self.element_updated = True
-
+# AutoHold
       if "AutoHold" not in self.config:
-        self.config.update({"AutoHold":""})
+        self.config.update({"AutoHold":"1"})
         self.element_updated = True
 
       if "nTune" not in self.config:
-        self.config.update({"nTune":""})
+        self.config.update({"nTune":"1"})
         self.element_updated = True
 
       if "steerLimitTimer" not in self.config:
-        self.config.update({"steerLimitTimer":""})
+        self.config.update({"steerLimitTimer":"0.7"})
         self.element_updated = True
 
       if "CruiseDelta" not in self.config:
-        self.config.update({"CruiseDelta":""})
+        self.config.update({"CruiseDelta":"5"})
         self.element_updated = True
 
       if "CruiseEnableMin" not in self.config:
-        self.config.update({"CruiseEnableMin":""})
+        self.config.update({"CruiseEnableMin":"10"})
         self.element_updated = True
 
       if "epsModded" not in self.config:
-        self.config.update({"epsModded":""})
+        self.config.update({"epsModded":"0"})
         self.element_updated = True
 
       if "accelerationMode" not in self.config:
-        self.config.update({"accelerationMode":""})
+        self.config.update({"accelerationMode":"0"})
         self.element_updated = True
 
       if self.element_updated:
