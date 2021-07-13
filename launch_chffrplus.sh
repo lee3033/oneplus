@@ -3,11 +3,11 @@
 if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
   echo "Installing fonts..."
   mount -o rw,remount /system
-  cp -f /data/openpilot/installer/fonts/NanumGothic* /system/fonts/
+  cp -f /data/openpilot/installer/fonts/opensans_* /system/fonts/
   cp -f /data/openpilot/installer/fonts/opensans_* /data/openpilot/selfdrive/assets/fonts/
   cp -f /data/openpilot/installer/fonts/fonts.xml /system/etc/fonts.xml
   chmod 644 /system/etc/fonts.xml
-  chmod 644 /system/fonts/NanumGothic*
+  chmod 644 /system/fonts/opensans_*
   cp -f /data/openpilot/installer/bootanimation.zip /system/media/
   cp -f /data/openpilot/installer/spinner /data/openpilot/selfdrive/ui/qt/
   sed -i -e 's/\r$//' /data/openpilot/t.sh
@@ -15,7 +15,6 @@ if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
   chmod 744 /system/media/bootanimation.zip
   chmod 700 /data/openpilot/selfdrive/ui/qt/spinner
   touch /data/openpilot/installer/boot_finish
-  chmod 700 /data/openpilot/scripts/oneplus_update_neos.sh
 
 elif [ "$(getprop persist.sys.locale)" != "ko-KR" ]; then
 
