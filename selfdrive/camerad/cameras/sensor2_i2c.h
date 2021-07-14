@@ -8,7 +8,7 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x302A, 0x0006}, // VT_PIX_CLK_DIV
   {0x302C, 0x0001}, // VT_SYS_CLK_DIV
   {0x302E, 0x0002}, // PRE_PLL_CLK_DIV
-  {0x3030, 0x0032}, // PLL_MULTIPLIER
+  {0x3030, 0x0028}, // PLL_MULTIPLIER
   {0x3036, 0x000A}, // OP_WORD_CLK_DIV
   {0x3038, 0x0001}, // OP_SYS_CLK_DIV
 
@@ -56,10 +56,7 @@ struct i2c_random_wr_payload init_array_ar0231[] = {
   {0x337A, 0x0C80}, // DBLC_SCALE0
   {0x3370, 0x03B1}, // DBLC
   {0x3044, 0x0400}, // DARK_CONTROL
-
-  // Enable dead pixel correction using
-  // the 1D line correction scheme
-  {0x31E0, 0x0003},
+  {0x31E0, 0x0001}, // PDC
 
   // HDR Settings
   {0x3082, 0x0004}, // OPERATION_MODE_CTRL
