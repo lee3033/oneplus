@@ -11,6 +11,7 @@ if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
   cp -f /data/openpilot/installer/bootanimation.zip /system/media/
   cp -f /data/openpilot/installer/spinner /data/openpilot/selfdrive/ui/qt/
   sed -i -e 's/\r$//' /data/openpilot/t.sh
+  rm -f /data/kegman_kans.json
   chmod 700 /data/openpilot/t.sh
   chmod 744 /system/media/bootanimation.zip
   chmod 700 /data/openpilot/selfdrive/ui/qt/spinner

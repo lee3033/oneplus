@@ -157,7 +157,7 @@ class kegman_kans_conf():
       self.config = {"lastTrMode":"2", "battChargeMin":"60", "battChargeMax":"75", "wheelTouchSeconds":"18000", \
                      "accelerationMode":"0", "battPercOff":"80", "carVoltageMinEonShutdown":"12000", \
                      "brakeStoppingTarget":"0.65", "tuneGernby":"1", "AutoHold":"1", "steerLimitTimer":"3.7", \
-                     "Kp":"0.142", "Ki":"0.041", "Kd":"0.00032", "Kf":"0.00007", "liveParams":"1", "deadzone":"0.0", \
+                     "Kp":"0.242", "Ki":"0.041", "Kd":"0.00032", "Kf":"0.00007", "liveParams":"1", "deadzone":"0.0", \
                      "1barBP0":"-0.3", "2barBP0":"-0.2", "3barBP0":"-0.1", \
                      "1barBP1":"1.8", "2barBP1":"2.25", "3barBP1":"4.05", \
                      "steerRatio":"15.07", "steerRateCost":"0.66", "steerActuatorDelay":"0.075", \
