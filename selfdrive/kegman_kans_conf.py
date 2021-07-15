@@ -46,8 +46,8 @@ class kegman_kans_conf():
 
       if "tuneGernby" not in self.config:
         self.config.update({"tuneGernby":"1"})
-        self.config.update({"Kp":"0.192"})
-        self.config.update({"Ki":"0.021"})
+        self.config.update({"Kp":"0.242"})
+        self.config.update({"Ki":"0.041"})
         self.config.update({"Kd":"0.00032"})
         self.element_updated = True
 
@@ -130,7 +130,7 @@ class kegman_kans_conf():
         self.element_updated = True
 
       if "steerLimitTimer" not in self.config:
-        self.config.update({"steerLimitTimer":"0.7"})
+        self.config.update({"steerLimitTimer":"3.7"})
         self.element_updated = True
 
       if "CruiseDelta" not in self.config:
@@ -156,8 +156,8 @@ class kegman_kans_conf():
     else:  # add "accelerationmode":"0" like as bellow, 1st word on the 2nd line
       self.config = {"lastTrMode":"2", "battChargeMin":"60", "battChargeMax":"75", "wheelTouchSeconds":"18000", \
                      "accelerationMode":"0", "battPercOff":"80", "carVoltageMinEonShutdown":"12000", \
-                     "brakeStoppingTarget":"0.65", "tuneGernby":"1", "AutoHold":"1", "steerLimitTimer":"0.7", \
-                     "Kp":"0.192", "Ki":"0.021", "Kd":"0.00032", "Kf":"0.00007", "liveParams":"1", "deadzone":"0.0", \
+                     "brakeStoppingTarget":"0.65", "tuneGernby":"1", "AutoHold":"1", "steerLimitTimer":"3.7", \
+                     "Kp":"0.142", "Ki":"0.041", "Kd":"0.00032", "Kf":"0.00007", "liveParams":"1", "deadzone":"0.0", \
                      "1barBP0":"-0.3", "2barBP0":"-0.2", "3barBP0":"-0.1", \
                      "1barBP1":"1.8", "2barBP1":"2.25", "3barBP1":"4.05", \
                      "steerRatio":"15.07", "steerRateCost":"0.66", "steerActuatorDelay":"0.075", \

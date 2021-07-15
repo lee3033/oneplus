@@ -76,10 +76,10 @@ class CarInterface(CarInterfaceBase):
     # Start with a baseline lateral tuning for all GM vehicles. Override tuning as needed in each model section below.
     ret.minSteerSpeed = 7 * CV.MPH_TO_MS
     ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.192], [0.021]]
+    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.242], [0.041]]
     ret.lateralTuning.pid.kf = 0.00007  # full torque for 20 deg at 80mph means 0.00007818594
     ret.steerRateCost = 0.35
-    ret.steerActuatorDelay = 0.075  # Default delay, not measured yet	  
+    ret.steerActuatorDelay = 0.115  # Default delay, not measured yet	  
 
     if candidate == CAR.VOLT:
       # supports stop and go, but initial engage must be above 18mph (which include conservatism)
@@ -163,7 +163,7 @@ class CarInterface(CarInterfaceBase):
     ret.stoppingBrakeRate = 0.2 # reach stopping target smoothly
     ret.startingBrakeRate = 2.0 # release brakes fast
     ret.startAccel = 1.2 # Accelerate from 0 faster
-    ret.steerLimitTimer = 1.7
+    ret.steerLimitTimer = 3.7
     ret.radarTimeStep = 0.0667  # GM radar runs at 15Hz instead of standard 20Hz
 
     return ret
