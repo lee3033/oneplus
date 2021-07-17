@@ -276,7 +276,7 @@ static void screen_draw_button(UIState *s, int touch_x, int touch_y) {
     nvgStroke(s->vg);
 
     nvgFontFace(s->vg, "sans-regular");
-    nvgFontSize(s->vg, 50);
+    nvgFontSize(s->vg, 65);
 
     if (captureState == CAPTURE_STATE_CAPTURING) {
     NVGcolor fillColor = nvgRGBA(255,0,0,150);
