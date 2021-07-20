@@ -14,8 +14,8 @@ static void ui_draw_extras_limit_speed(UIState *s)
     {
         int w = 180;
         int h = 180;
-        int x = (s->viz_rect.x + (bdr_s*2)) + 205;
-        int y = 530;
+        int x = (s->viz_rect.x + (bdr_s*2)) + 215;
+        int y = 70;
         char str[32];
 
         nvgBeginPath(s->vg);
