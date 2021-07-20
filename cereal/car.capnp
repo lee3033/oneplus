@@ -370,6 +370,7 @@ struct CarControl {
       chimePrompt @7;
       chimeWarning2Repeat @8;
       chimeSlowingDownSpeed @9;
+      chimeAutoHoldOn @10;
     }
   }
 

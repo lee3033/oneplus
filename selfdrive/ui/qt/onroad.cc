@@ -76,7 +76,9 @@ OnroadAlerts::OnroadAlerts(QWidget *parent) : QWidget(parent) {
     {AudibleAlert::CHIME_WARNING2_REPEAT, "../assets/sounds/warning_2.wav", true},
     {AudibleAlert::CHIME_WARNING_REPEAT, "../assets/sounds/warning_repeat.wav", true},
     {AudibleAlert::CHIME_ERROR, "../assets/sounds/error.wav", false},
-    {AudibleAlert::CHIME_PROMPT, "../assets/sounds/error.wav", false}};
+    {AudibleAlert::CHIME_PROMPT, "../assets/sounds/error.wav", false},
+    {AudibleAlert::CHIME_AUTO_HOLD_ON, "../assets/sounds/autoholdon.wav", false},
+    {AudibleAlert::CHIME_SLOWING_DOWN_SPEED, "../assets/sounds/slowing_down_speed.wav", 0}};
 
   for (auto &[alert, fn, loops] : sound_list) {
     sounds[alert].first.setSource(QUrl::fromLocalFile(fn));
