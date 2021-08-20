@@ -114,6 +114,7 @@ else:
   cflags = []
   cxxflags = []
   cpppath = []
+  rpath = []
 
   if arch == "jarch64":
     libpath = [
