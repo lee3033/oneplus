@@ -8,7 +8,7 @@
 #define UI_FEATURE_RIGHT 1
 
 #define UI_FEATURE_LEFT_Y 220
-#define UI_FEATURE_RIGHT_Y 20
+#define UI_FEATURE_RIGHT_Y 10
 
 #define UI_FEATURE_LEFT_REL_DIST 1
 #define UI_FEATURE_LEFT_REL_SPEED 1
@@ -78,7 +78,7 @@ typedef struct Alert {
   QString type;
   cereal::ControlsState::AlertSize size;
   AudibleAlert sound;
-  bool equal(Alert a2) {
+  bool equal(const Alert &a2) {
     return text1 == a2.text1 && text2 == a2.text2 && type == a2.type;
   }
 } Alert;

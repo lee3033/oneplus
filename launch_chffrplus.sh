@@ -10,6 +10,12 @@ if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
   chmod 644 /system/fonts/NanumGothic*
   cp -f /data/openpilot/installer/bootanimation.zip /system/media/
   cp -f /data/openpilot/installer/spinner /data/openpilot/selfdrive/ui/qt/
+  sed -i 's/self._AWARENESS_TIME = 35/self._AWARENESS_TIME = 10800/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/self._DISTRACTED_TIME = 11/self._DISTRACTED_TIME = 7200/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/self.face_detected = False/self.face_detected = True/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/self.face_detected = driver/self.face_detected = True # driver/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/DAYS_NO_CONNECTIVITY_MAX = 7/DAYS_NO_CONNECTIVITY_MAX = 999/' /data/openpilot/selfdrive/thermald/thermald.py
+  sed -i 's/DAYS_NO_CONNECTIVITY_PROMPT = 4/DAYS_NO_CONNECTIVITY_PROMPT = 999/' /data/openpilot/thermald/thermald.py
   chmod 744 /system/media/bootanimation.zip
   chmod 700 /data/openpilot/selfdrive/ui/qt/spinner
   sed -i -e 's/\r$//' /data/openpilot/selfdrive/*.py
@@ -19,6 +25,7 @@ if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
   sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/*.h
   sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/*.py
   sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/lib/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/locationd/models/*.py
   sed -i -e 's/\r$//' /data/openpilot/cereal/*.py
   sed -i -e 's/\r$//' /data/openpilot/cereal/*.h
   sed -i -e 's/\r$//' /data/openpilot/cereal/*.capnp
@@ -45,6 +52,7 @@ if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
   sed -i -e 's/\r$//' /data/openpilot/common/*.py
   sed -i -e 's/\r$//' /data/openpilot/common/*.pyx
   sed -i -e 's/\r$//' /data/openpilot/common/*.pxd
+  sed -i -e 's/\r$//' /data/openpilot/scripts/oneplus_update_neos.sh
   sed -i -e 's/\r$//' /data/openpilot/launch_env.sh
   sed -i -e 's/\r$//' /data/openpilot/launch_openpilot.sh
   sed -i -e 's/\r$//' /data/openpilot/Jenkinsfile

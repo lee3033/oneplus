@@ -5,7 +5,7 @@ if [ -z "$BASEDIR" ]; then
 fi
 
 source "$BASEDIR/launch_env.sh"
-cp -f "$BASEDIR/installer/updater/update.zip" "/sdcard/update.zip"
+cp -f "$BASEDIR/installer/updater/update.zip" "/sdcard/update.zip" || exit
 pm disable ai.comma.plus.offroad
 killall _ui
 "$BASEDIR/installer/updater/updater" "file://$BASEDIR/installer/updater/oneplus.json"
