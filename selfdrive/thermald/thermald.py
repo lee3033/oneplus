@@ -288,7 +288,7 @@ def thermald_thread():
 
     msg.deviceState.freeSpacePercent = get_available_percent(default=100.0)
     msg.deviceState.memoryUsagePercent = int(round(psutil.virtual_memory().percent))
-    msg.deviceState.cpuUsagePercent = int(round(psutil.cpu_percent()))
+    msg.deviceState.cpuUsagePercent = [int(round(n)) for n in psutil.cpu_percent(percpu=True)]
     msg.deviceState.gpuUsagePercent = int(round(HARDWARE.get_gpu_usage_percent()))
     msg.deviceState.networkType = network_type
     msg.deviceState.networkStrength = network_strength
@@ -414,9 +414,6 @@ def thermald_thread():
       params.put_bool("IsOnroad", should_start)
       params.put_bool("IsOffroad", not should_start)
       HARDWARE.set_power_save(not should_start)
-      if TICI and not params.get_bool("EnableLteOnroad"):
-        fxn = "off" if should_start else "on"
-        os.system(f"nmcli radio wwan {fxn}")
 
     if should_start:
       off_ts = None
