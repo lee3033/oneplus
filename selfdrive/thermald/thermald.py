@@ -215,15 +215,6 @@ def thermald_thread():
           pass
     cloudlog.event("CPR", data=cpr_data)
 
-    # modem logging
-    try:
-      binpath = os.path.join(BASEDIR, "selfdrive/hardware/eon/rat")
-      out = subprocess.check_output([binpath], encoding='utf8').strip()
-      dat = json.loads(out.splitlines()[1])
-      cloudlog.event("NV data", data=dat)
-    except Exception:
-      pass
-
   while 1:
     pandaState = messaging.recv_sock(pandaState_sock, wait=True)
     msg = read_thermal(thermal_config)
@@ -273,6 +264,13 @@ def thermald_thread():
         network_strength = HARDWARE.get_network_strength(network_type)
         network_info = HARDWARE.get_network_info()  # pylint: disable=assignment-from-none
         wifiIpAddress = HARDWARE.get_ip_address()
+
+        # Log modem version once
+        if modem_version is None:
+          modem_version = HARDWARE.get_modem_version()  # pylint: disable=assignment-from-none
+          if modem_version is not None:
+            cloudlog.warning(f"Modem version: {modem_version}")
+
         if TICI and (network_info.get('state', None) == "REGISTERED"):
           registered_count += 1
         else:
