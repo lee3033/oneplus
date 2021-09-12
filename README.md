@@ -1,14 +1,4 @@
 
-**This is based on xx979xx for Hyundai, Kia, Genesis.**
-
-https://github.com/xx979xx/openpilot
-
-It is open source and inherits MIT license.  By installing this software you accept all responsibility for anything that might occur while you use it.  All contributors to this fork are not liable.  <b>Use at your own risk.</b>
-
-
-------------------------------------------------------
-
-
 ![](https://user-images.githubusercontent.com/37757984/127420744-89ca219c-8f8e-46d3-bccf-c1cb53b81bb1.png)
 
 Table of Contents
