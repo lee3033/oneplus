@@ -275,14 +275,14 @@ static void ui_draw_world(UIState *s) {
       draw_lead(s, lead_two, s->scene.lead_vertices[1]);
     }
 
-    auto radar_state = (*s->sm)["radarState"].getRadarState();
-    auto lead_radar = radar_state.getLeadOne();
-    if (lead_radar.getStatus() && lead_radar.getRadar()) {
-      if (s->custom_lead_mark)
-        draw_lead_custom(s, lead_radar, s->scene.lead_vertices_radar[0]);
-      else
-        draw_lead_radar(s, lead_radar, s->scene.lead_vertices_radar[0]);
-    }
+  //  auto radar_state = (*s->sm)["radarState"].getRadarState();
+ //  auto lead_radar = radar_state.getLeadOne();
+  //  if (lead_radar.getStatus() && lead_radar.getRadar()) {
+   //   if (s->custom_lead_mark)
+   //     draw_lead_custom(s, lead_radar, s->scene.lead_vertices_radar[0]);
+   //   else
+   //     draw_lead_radar(s, lead_radar, s->scene.lead_vertices_radar[0]);
+  //  }
   //}
 
   nvgResetScissor(s->vg);
