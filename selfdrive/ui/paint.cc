@@ -951,6 +951,18 @@ static void ui_draw_vision_event(UIState *s) {
   }
 }
 
+static void ui_draw_gps(UIState *s) {
+  const int radius = 60;
+  const int gps_x = s->fb_w - (radius*5);
+  const int gps_y = radius + 40;
+  auto gps_state = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
+  if (gps_state.getGpsOK()) {
+    ui_draw_circle_image(s, gps_x, gps_y, radius, "gps", COLOR_BLACK_ALPHA(30), 1.0f);
+  } else {
+    ui_draw_circle_image(s, gps_x, gps_y, radius, "gps", COLOR_BLACK_ALPHA(10), 0.15f);
+  }
+}
+
 static void ui_draw_vision_face(UIState *s) {
   const int radius = 96;
   const int center_x = radius + (bdr_s * 2);
@@ -980,6 +992,7 @@ static void ui_draw_vision(UIState *s) {
   ui_draw_vision_scc_gap(s);
   ui_draw_vision_brake(s);
   ui_draw_vision_autohold(s);
+  ui_draw_gps(s);	
 }
 
 void ui_draw(UIState *s, int w, int h) {
@@ -1094,6 +1107,7 @@ void ui_nvg_init(UIState *s) {
     {"driver_face", "../assets/img_driver_face.png"},
 
 	{"brake", "../assets/img_brake_disc.png"},
+	{"gps", "../assets/img_gps.png"},
 	{"autohold_warning", "../assets/img_autohold_warning.png"},
 	{"autohold_active", "../assets/img_autohold_active.png"},
 	{"img_nda", "../assets/img_nda.png"},
