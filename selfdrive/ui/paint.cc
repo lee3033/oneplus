@@ -275,14 +275,14 @@ static void ui_draw_world(UIState *s) {
       draw_lead(s, lead_two, s->scene.lead_vertices[1]);
     }
 
-  //  auto radar_state = (*s->sm)["radarState"].getRadarState();
- //  auto lead_radar = radar_state.getLeadOne();
-  //  if (lead_radar.getStatus() && lead_radar.getRadar()) {
-   //   if (s->custom_lead_mark)
-   //     draw_lead_custom(s, lead_radar, s->scene.lead_vertices_radar[0]);
-   //   else
-   //     draw_lead_radar(s, lead_radar, s->scene.lead_vertices_radar[0]);
-  //  }
+    auto radar_state = (*s->sm)["radarState"].getRadarState();
+    auto lead_radar = radar_state.getLeadOne();
+    if (lead_radar.getStatus() && lead_radar.getRadar()) {
+      if (s->custom_lead_mark)
+        draw_lead_custom(s, lead_radar, s->scene.lead_vertices_radar[0]);
+      else
+        draw_lead_radar(s, lead_radar, s->scene.lead_vertices_radar[0]);
+    }
   //}
 
   nvgResetScissor(s->vg);
@@ -484,7 +484,7 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
   int bb_h = 5;
   NVGcolor lab_color = nvgRGBA(255, 255, 255, 200);
   NVGcolor uom_color = nvgRGBA(255, 255, 255, 200);
-  int value_fontSize=30;
+  int value_fontSize=35;
   int label_fontSize=15;
   int uom_fontSize = 15;
   int bb_uom_dx =  (int)(bb_w /2 - uom_fontSize*2.5) ;
@@ -662,10 +662,10 @@ static void bb_ui_draw_basic_info(UIState *s)
     auto car_params = (*s->sm)["carParams"].getCarParams();
     auto live_params = (*s->sm)["liveParameters"].getLiveParameters();
 
-    int mdps_bus = scene->car_params.getMdpsBus();
+   // int mdps_bus = scene->car_params.getMdpsBus();
     int scc_bus = scene->car_params.getSccBus();
 
-    snprintf(str, sizeof(str), "AO(%.2f/%.2f) SR(%.2f) SRC(%.2f) BUS(MDPS:%d SCC:%d) SCC(%.2f/%.2f/%.2f)%s%s",
+    snprintf(str, sizeof(str), "AO(%.2f/%.2f) SR(%.2f) SRC(%.2f) SCC:%d SCC(%.2f/%.2f/%.2f)%s%s",
 
                         live_params.getAngleOffsetDeg(),
                         live_params.getAngleOffsetAverageDeg(),
@@ -673,7 +673,7 @@ static void bb_ui_draw_basic_info(UIState *s)
                         controls_state.getSteerRateCost(),
                        // controls_state.getSteerActuatorDelay(),
 
-                        mdps_bus, scc_bus,
+                        scc_bus,
                         controls_state.getSccGasFactor(),
                         controls_state.getSccBrakeFactor(),
                         controls_state.getSccCurvatureFactor(),
